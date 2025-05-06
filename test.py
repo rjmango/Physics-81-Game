@@ -6,12 +6,12 @@ pygame.init()
 screen = pygame.display.set_mode((1920,1280)) #width, height
 pygame.display.set_caption('Vine ni juju')
 clock = pygame.time.Clock()
-test_font = pygame.font.Font(r'C:\Users\John\Desktop\Physics-81-Game\Pixeltype.ttf', 50) #font type, font size //ttf file if nahan ka 
+test_font = pygame.font.Font(r'C:\Users\John\Desktop\Physics-81-Game\assets\stage 1\Pixeltype.ttf', 50) #font type, font size //ttf file if nahan ka 
 
-vine_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\pixelvinebg.png')
-water_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\water(resized).png')
+vine_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\assets\stage 1\pixelvinebg.png')
+water_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\assets\stage 1\water(resized).png')
 text_surface = test_font.render('Jump and avoid falling on the water!', False, 'Green') #text info, anti-alias, color
-ground_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\image-removebg-preview.png')
+ground_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\assets\stage 1\image-removebg-preview.png')
 
 while True:
     #event loop murag for loop
