@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import os
 
 WINDOW_WIDTH = 1920/2
 WINDOW_HEIGHT = 1280/2
@@ -127,6 +128,7 @@ class Game():
         pygame.display.set_caption("Cannon Platform Game")
         self.running = True
         self.clock = pygame.time.Clock()
+        self.load_assets()
         
         self.cannon = Cannon(
             x=25, 
@@ -226,7 +228,7 @@ class Game():
         self.ball.velocity_y = 0
 
     def render(self):
-        self.game_canvas.fill((0, 0, 0))
+        self.game_canvas.blit(self.bg, (0,0))
         
         # Draw ground
         pygame.draw.rect(self.game_canvas, (100, 100, 100), 
@@ -255,6 +257,12 @@ class Game():
         self.screen.blit(scaled_canvas, (0, 0))
         
         pygame.display.flip()
+
+    def load_assets(self):
+        self.assets_dir = os.path.join("assets")
+
+        self.bg = pygame.image.load("assets/Projectile-background.jpg").convert_alpha()
+        self.bg = pygame.transform.scale(self.bg, (self.GAME_W, self.GAME_H))
 
 if __name__ == "__main__":
     game = Game()
