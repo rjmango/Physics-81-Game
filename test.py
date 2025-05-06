@@ -1,87 +1,40 @@
 import pygame
-import sys
+from sys import exit 
 
-# --- Init ---
 pygame.init()
-screen = pygame.display.set_mode((1000, 600))
+#sa pygame kay ang origin kay nas top left
+screen = pygame.display.set_mode((1920,1280)) #width, height
+pygame.display.set_caption('Vine ni juju')
 clock = pygame.time.Clock()
-font = pygame.font.SysFont(None, 40)
+test_font = pygame.font.Font(r'C:\Users\John\Desktop\Physics-81-Game\Pixeltype.ttf', 50) #font type, font size //ttf file if nahan ka 
 
-# --- Knight ---
-def reset_knight():
-    return pygame.Rect(50, 400, 40, 60), 0, False
+vine_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\pixelvinebg.png')
+water_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\water(resized).png')
+text_surface = test_font.render('Jump and avoid falling on the water!', False, 'Green') #text info, anti-alias, color
+ground_surface = pygame.image.load(r'C:\Users\John\Desktop\Physics-81-Game\image-removebg-preview.png')
 
-knight, vel_y, on_ground = reset_knight()
-gravity = 800
-jump_strength = -400
-
-# --- Platforms ---
-platforms = [
-    pygame.Rect(100, 450, 150, 10),
-    pygame.Rect(300, 380, 200, 10),
-    pygame.Rect(550, 300, 170, 10),
-    pygame.Rect(750, 400, 150, 10),
-    pygame.Rect(900, 320, 120, 10)
-]
-
-# --- Colors ---
-BLUE = (50, 100, 255)
-GREEN = (0, 255, 0)
-RED = (255, 50, 50)
-BLACK = (0, 0, 0)
-
-# --- Game Loop ---
-running = True
-while running:
-    dt = clock.tick(60) / 1000  # frame time in seconds
-
+while True:
+    #event loop murag for loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit() #opposite sa init
+            exit()
+    #draw all our elements
+    #update everything
+    #order of code
+    
+    screen.blit(vine_surface, (0,0)) 
+    screen.blit(water_surface, (0,1080))#block image transfer
+    screen.blit(text_surface, (50, 150))
+    screen.blit(ground_surface, (0, 900))
+    
+    pygame.display.update()
+    clock.tick(60)
 
-    # --- Movement ---
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        knight.x -= 200 * dt
-    if keys[pygame.K_RIGHT]:
-        knight.x += 200 * dt
+#surface kani is display surface ^^
+#(regular) surfave single images basically
 
-    # --- Jumping ---
-    if keys[pygame.K_UP] and on_ground:
-        vel_y = jump_strength
-
-    # --- Gravity ---
-    vel_y += gravity * dt
-    knight.y += vel_y * dt
-    on_ground = False
-
-    # --- Platform Collision ---
-    for plat in platforms:
-        if knight.colliderect(plat) and vel_y > 0:
-            knight.bottom = plat.top
-            vel_y = 0
-            on_ground = True
-
-    # --- Check for failure (falls in water) ---
-    if knight.y > 500:
-        knight, vel_y, on_ground = reset_knight()
-
-    # --- Drawing ---
-    screen.fill((30, 30, 60))
-
-    # Water hazard (blue area)
-    pygame.draw.rect(screen, BLUE, (0, 500, 1000, 100))
-
-    # Platforms
-    for plat in platforms:
-        pygame.draw.rect(screen, GREEN, plat)
-
-    # Knight (red stickman)
-    pygame.draw.rect(screen, RED, knight)
-
-    # --- Update Display ---
-    pygame.display.flip()
-
-pygame.quit()
-sys.exit()
-
+#creating text (surface with text)
+#1 creat an image of the text and place that on a surface 
+#2 place that surface on the screen
+#create a font(text size and style), write text on a surface, blit the text surface
