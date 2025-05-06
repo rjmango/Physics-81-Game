@@ -9,21 +9,25 @@ class MainMenu(State):
 
         # buttons
         scale = 0.5
-        self.play_button = Button(200, 200, self.play_button_asset, scale)
-        self.quit_button = Button(200, 400, self.quit_button_asset, scale)
-
+        self.play_button = Button((self.game.SCREEN_WIDTH - 300)//2, 400, self.play_button_asset, scale)
+        self.quit_button = Button((self.game.SCREEN_WIDTH - 300)//2, 520, self.quit_button_asset, scale)
+    
     def update(self):
         pass
 
     def render(self, display):
-        # load background
+        # render background in screen 
         display.blit(self.bg, (0,0))
-        self.play_button.draw(display)
-        self.quit_button.draw(display)
+
+        if self.play_button.draw(display):
+            print("play")
+        if self.quit_button.draw(display):
+            print("quit")
+            self.game.running = False
 
     def load_assets(self):
         # bg asset
-        self.bg = pygame.image.load("assets/bg/main-menu-bg.png").convert_alpha()
+        self.bg = self.game.load_background_asset("assets/bg/main-menu-bg.png")
 
         # button assets
         self.play_button_asset = pygame.image.load("assets/buttons/start-button.png").convert_alpha()

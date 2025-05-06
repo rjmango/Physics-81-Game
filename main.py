@@ -9,7 +9,7 @@ class Game:
         pygame.display.set_caption("Game")
         
         # Window display information
-        self.GAME_W, self.GAME_H = 1920/2, 1280/2
+        self.GAME_W, self.GAME_H = 1920, 1280
         self.SCREEN_WIDTH = pygame.display.Info().current_w * 6 // 8
         self.SCREEN_HEIGHT = self.SCREEN_WIDTH * 2//3
         self.game_canvas = pygame.Surface((self.GAME_W, self.GAME_H))
@@ -44,8 +44,9 @@ class Game:
         self.state_stack[-1].render(self.game_canvas)
 
         # Render current state to the screen
-        render = pygame.transform.scale(self.game_canvas, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        self.screen.blit(render, (0,0))
+        # render = pygame.transform.scale(self.game_canvas, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        # print(render.get_width(), render.get_height())
+        self.screen.blit(self.game_canvas, (0,0))
         pygame.display.flip()
     
     def load_assets(self):
@@ -55,6 +56,11 @@ class Game:
     def load_state(self):
         self.main_menu = MainMenu(self)
         self.state_stack.append(self.main_menu)
+    
+    def load_background_asset(self, filepath):
+        bg_asset = pygame.image.load(filepath).convert_alpha()
+        scaled_asset = pygame.transform.scale(bg_asset, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        return scaled_asset
     
 if __name__ == "__main__":
     game = Game()
