@@ -22,6 +22,11 @@ class Game:
         # initialize dependencies
         self.load_assets()
         self.load_state()
+        self.load_sfx()
+        
+        # Play background music
+        self.main_menu_bgm.play(-1)
+        pygame.mixer.music.set_volume(0.8)
     
     def game_loop(self):
         while self.running:
@@ -61,6 +66,9 @@ class Game:
         bg_asset = pygame.image.load(filepath).convert_alpha()
         scaled_asset = pygame.transform.scale(bg_asset, (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         return scaled_asset
+    
+    def load_sfx(self):
+        self.main_menu_bgm = pygame.mixer.Sound('assets/sfx/main-menu-bgm.mp3')
     
 if __name__ == "__main__":
     game = Game()
