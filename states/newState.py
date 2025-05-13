@@ -4,8 +4,8 @@ class StateName(State):
     def __init__(self, game):
         State.__init__(self, game)
         self.load_assets()
-        # Other parts sa code
-    
+        # Other parts sa code | add variables
+
     def update(self):
         # Code for updating values
         pass

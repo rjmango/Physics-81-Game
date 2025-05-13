@@ -2,6 +2,9 @@ import pygame
 import os
 
 from states.main_menu import MainMenu
+# check newlymade state
+# from states.<state name> import <state name>
+
 
 class Game:
     def __init__(self):
@@ -23,7 +26,7 @@ class Game:
         self.load_assets()
         self.load_state()
         self.load_sfx()
-        
+
         # Play background music
         self.main_menu_bgm.play(-1)
         pygame.mixer.music.set_volume(0.8)
@@ -60,6 +63,9 @@ class Game:
     
     def load_state(self):
         self.main_menu = MainMenu(self)
+
+        # for testing only !!!
+        # self.main_menu = <state name>(self)
         self.state_stack.append(self.main_menu)
     
     def load_background_asset(self, filepath):
