@@ -42,7 +42,7 @@ class Vine:
 
             for i, text in enumerate(problem_text):
                 text_surface = font.render(text, True, (255, 255, 255))
-                surface.blit(text_surface, (20, 20 + i * 30))
+                surface.blit(text_surface, (20, 120 + i * 30))
 
 class GameState:
     def __init__(self, game):
