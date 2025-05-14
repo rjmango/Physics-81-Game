@@ -10,7 +10,6 @@ FPS = 60
 class Vine:
     def __init__(self, x, y, width=200, height=20, snap_time=3, has_problem=False):
         self.rect = pg.Rect(x, y, width, height)
-        self.color = (0, 200, 0)
         self.snap_time = snap_time
         self.time_elapsed = 0
         self.snapped = False
@@ -27,11 +26,10 @@ class Vine:
             self.time_elapsed += dt
             if self.time_elapsed >= self.snap_time:
                 self.snapped = True
-                self.color = (200, 0, 0)
 
-    def draw(self, surface):
+    def draw(self, surface, vine_image):
         if not self.snapped:
-            pg.draw.rect(surface, self.color, self.rect)
+            surface.blit(vine_image, self.rect.topleft)
 
         if self.has_problem:
             font = pg.font.Font(None, 30)
@@ -74,9 +72,11 @@ class GameState:
                     path.join(base_path, 'assets', 'stage 1', name)
                 ).convert_alpha()
 
-            self.vine_surface = load_asset('pixelvinebg.png')
+            self.background_surface = load_asset('pixelvinebg.png')  # background
+            self.vine_surface = load_asset('masgamay.png')  # vine block/platform
             self.water_surface = load_asset('water(resized).png')
-            self.ground_surface = load_asset('image-removebg-preview.png')
+            self.ground_surface = load_asset('image-removebg-preview.png')  # optional
+
             self.knight_surface = load_asset('knightpix.png')
             self.knight_surface_left = pg.transform.flip(self.knight_surface, True, False)
             self.knight_surface_right = self.knight_surface
@@ -138,12 +138,12 @@ class GameState:
             self.gravity_enabled = False
 
     def render(self, display):
-        display.blit(self.vine_surface, (0, 0))
-        display.blit(self.ground_surface, (0, 1000))
+        display.blit(self.background_surface, (0, 0))  # show background first
         display.blit(self.water_surface, (0, 1100))
+        display.blit(self.ground_surface, (0, 875))
 
         for vine in self.vines:
-            vine.draw(display)
+            vine.draw(display, self.vine_surface)
 
         knight_surf = (
             self.knight_surface_right if self.facing_right 
