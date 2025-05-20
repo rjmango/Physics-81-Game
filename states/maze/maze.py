@@ -1,7 +1,7 @@
 import pygame as pg
 import sys
+import os
 from tilesheet import Tilesheet
-from os import path
 from settings import *
 from sprites import *
 from tilemap import *
@@ -15,14 +15,25 @@ class Game:
         pg.key.set_repeat(500,100)
         self.load_data()
 
-        self.tiles = Tilesheet(r'C:\Users\Norvel\Desktop\Code\GithubPhysics\Pygame-learn\maze\tileset\terrain_tiles_v2.png', 32, 32, 16, 10)
+       # Get path to terrain_tiles_v2.png relative to this file
+        current_dir = os.path.dirname(__file__)  # .../game/states/maze
+        tilesheet_path = os.path.abspath(
+            os.path.join(current_dir, '..', '..', 'assets', 'stage 2', 'terrain_tiles_v2.png')
+        )
+
+        self.tiles = Tilesheet(tilesheet_path, 32, 32, 16, 10)
 
     def load_data(self):    
-        game_folder = path.dirname(__file__)
-        img_folder = path.join(game_folder, 'tileset')  
-        self.map= Map(path.join(game_folder, 'map2.txt'))
-        self.player_img = pg.image.load('tileset\kneght.png').convert_alpha()
 
+        game_folder = os.path.dirname(__file__)
+        img_folder = os.path.join(game_folder, '..', '..', 'assets', 'stage 2')  # Adjust to correct folder
+        map_path = os.path.join(game_folder, 'map2.txt')
+
+        # Assuming Map is a class defined elsewhere
+        self.map = Map(map_path)
+
+        # Properly join the path to the image
+        self.player_img = pg.image.load(os.path.join(img_folder, 'kneght.png')).convert_alpha()
         
     def new(self):
         self.all_sprites = pg.sprite.Group()
