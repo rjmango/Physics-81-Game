@@ -9,7 +9,7 @@ SCREEN_HEIGHT = 1280
 FPS = 60
 
 class Vine:
-    def __init__(self, x, y, width=30, height=10, snap_time=2, has_problem=False):
+    def __init__(self, x, y, width=1, height=10, snap_time=2, has_problem=False):
         self.original_x = x  # Anchor point x (top center of vine)
         self.original_y = y  # Anchor point y (top center of vine)
         self.width = width
