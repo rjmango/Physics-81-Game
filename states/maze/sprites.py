@@ -133,6 +133,19 @@ class Vertical_Bottom_Wall(pg.sprite.Sprite):
         self.y = y
         self.rect.topleft = (x * TILESIZE, y * TILESIZE)
 
+class Goal(pg.sprite.Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites
+        pg.sprite.Sprite.__init__(self, self.groups)
+        self.game = game
 
+        # Create a fully transparent surface
+        self.image = pg.Surface((TILESIZE, TILESIZE), pg.SRCALPHA)
+        self.image.fill((0, 0, 0, 0))  # Fully transparent RGBA
+
+        self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
+        self.rect.topleft = (x * TILESIZE, y * TILESIZE)
 
 

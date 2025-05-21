@@ -60,6 +60,8 @@ class Game:
                     Vertical_Bottom_Wall(self, col, row)
                 if tile == 'P':
                     self.player = Player(self, col, row)
+                if tile == 'G':
+                    Goal(self, col, row)
                 #elif tile == '.':
                     #Floor(self, col, row)
         self.camera = Camera(self.map.width, self.map.height)
@@ -71,6 +73,15 @@ class Game:
             self.events()
             self.update()
             self.draw()
+    
+    def show_congrats_screen(self):
+        self.screen.fill(BLACK)
+        font = pg.font.SysFont('Arial', 48)
+        text_surface = font.render("Congratulations! You reached the end!", True, WHITE)
+        text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self.screen.blit(text_surface, text_rect)
+        pg.display.flip()
+        pg.time.wait(3000)  # Show for 3 seconds before continuing
 
     def quit(self):
         pg.quit()
@@ -78,7 +89,11 @@ class Game:
     
     def update(self):
         self.all_sprites.update()  # Update all sprites (including player)
-        self.camera.update(self.player) 
+        self.camera.update(self.player)
+        goal_hit = pg.sprite.spritecollideany(self.player, [s for s in self.all_sprites if isinstance(s, Goal)])
+        if goal_hit:
+            self.playing = False  # End the current game loop
+            self.show_congrats_screen() 
 
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
