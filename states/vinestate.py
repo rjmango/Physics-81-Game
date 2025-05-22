@@ -66,9 +66,10 @@ class Vine:
         if self.has_problem:
             font = pg.font.Font(None, 40)
             problem_text = [
+                f"BE QUICK TO AVOID FALLING IN THE SWAMP!",
+                f"ONLY ONE VINE CAN HOLD YOUR WEIGHT!",
                 f"Mass: {self.mass}kg | Length: {self.length}m",
                 f"Speed: {self.speed}m/s | g: {self.g}m/s²",
-                "Minimum tension to avoid snapping:",
                 f"A) 650N B) {self.correct_answer}N C) 450N D) 500N"
             ]
             for i, text in enumerate(problem_text):
@@ -92,18 +93,30 @@ class GameState:
         self.ground_rect = pg.Rect(-430, 1090, self.ground_surface.get_width(), self.ground_surface.get_height())
 
         # Initialize vines with proper snap times
-        self.vines = [
-            Vine(650, 900, snap_time=2.0),      # 2 seconds
-            Vine(950, 750, snap_time=1.5),      # 1.5 seconds
-            Vine(1300, 1000, snap_time =2.0),    # 1 second
-            Vine(1750, 850, snap_time=999, has_problem=True)  # Stable vine
+        self.initial_vines = [
+            Vine(550, 850, snap_time=2.0),      # 2 seconds
+            Vine(950, 650, snap_time=1.5),      # 1.5 seconds
+            Vine(1300, 520, snap_time=2.0),    # 1 second
+            Vine(1650, 850, snap_time=999, has_problem=True)  # Stable vine
         ]
         
         # Adjust pendulum lengths
-        self.vines[0].length = 7  # Longest vine
-        self.vines[1].length = 6
-        self.vines[3].length = 6
-        self.vines[2].length = 5  # Shortest vine
+        self.initial_vines[0].length = 7  # Longest vine
+        self.initial_vines[1].length = 6
+        self.initial_vines[3].length = 6
+        self.initial_vines[2].length = 5  # Shortest vine
+        
+        self.reset_game()
+        
+    def reset_game(self):
+        self.vines = [Vine(vine.original_x, vine.original_y, vine.width, vine.height, vine.snap_time, vine.has_problem) for vine in self.initial_vines]
+        for i, vine in enumerate(self.vines):
+            vine.length = self.initial_vines[i].length
+        self.knight_rect.bottomleft = (100, 1100)
+        self.knight_gravity = 0
+        self.on_vine = False
+        self.gravity_enabled = False
+        self.lives = 3  # Player starts with 3 lives
 
     def load_assets(self):
         try:
@@ -115,6 +128,7 @@ class GameState:
                 ).convert_alpha()
 
             self.background_surface = load_asset('pixelvinebg.png')
+            self.background_vine = load_asset('vinetop.png')
             self.vine_surface = load_asset('masgamay.png')
             self.water_surface = load_asset('water(resized).png')
             self.ground_surface = load_asset('image-removebg-preview.png')
@@ -194,15 +208,27 @@ class GameState:
             self.on_vine = True
 
         if self.knight_rect.top > SCREEN_HEIGHT:
-            self.knight_rect.bottomleft = (100, 1100)
-            self.knight_gravity = 0
-            self.gravity_enabled = False
+            self.lives -= 1
+            if self.lives > 0:
+                self.reset_game()
+            else:
+                # Game over logic here
+                print("Game Over!")
+                self.knight_rect.bottomleft = (100, 1100)
+                self.knight_gravity = 0
+                self.gravity_enabled = False
+                self.lives = 3  # Reset lives for next game
 
     def render(self, display):
+       # display.blit(self.background_vine, (0, 100))
+
         display.blit(self.background_surface, (0, 0))
+
         display.blit(self.water_surface, (0, 1100))
         display.blit(self.ground_surface, (0, 875))
-
+        #display.blit(self.background_vine, (0, 100))
+        scaled_vine = pg.transform.scale(self.background_vine, (1900, 1000))
+        display.blit(scaled_vine, (350, -120))
         for vine in self.vines:
             vine.draw(display, self.vine_surface)
 
@@ -211,6 +237,11 @@ class GameState:
             else self.knight_surface_left
         )
         display.blit(knight_surf, self.knight_rect)
+        
+        # Display lives remaining
+        font = pg.font.Font(None, 50)
+        lives_text = font.render(f"Lives: {self.lives}", True, (255, 255, 255))
+        display.blit(lives_text, (20, 20))
 
 class Game:
     def __init__(self):
