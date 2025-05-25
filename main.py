@@ -3,7 +3,7 @@ import os
 
 from states.main_menu import MainMenu
 # check newlymade state
-from states.projectile import Projectile
+
 
 class Game:
     def __init__(self):
@@ -20,6 +20,8 @@ class Game:
         # Game logic information
         self.running = True
         self.state_stack = []
+        self.bossDefeated = False
+        self.bossDefeatedChanged = False
 
         self.actions = {"SPACE": False, "LEFT": False, "RIGHT": False, "UP": False, "DOWN": False, "R": False}
 
@@ -103,6 +105,8 @@ class Game:
     def load_sfx(self):
         self.main_menu_bgm = pygame.mixer.Sound('assets/sfx/main-menu-bgm.mp3')
         self.projectile_boss_bgm = pygame.mixer.Sound('assets/sfx/projectile-bgm.mp3')
+        self.pre_boss_bgm = pygame.mixer.Sound('assets/sfx/pre-boss-fight.mp3')
+        self.post_boss_bgm = pygame.mixer.Sound('assets/sfx/post-boss-fight.wav')
     
 if __name__ == "__main__":
     game = Game()

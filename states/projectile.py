@@ -18,8 +18,6 @@ death1 = mixer.Sound('assets/sfx/death1.mp3')
 death2 = mixer.Sound('assets/sfx/death2.mp3')
 death3 = mixer.Sound('assets/sfx/death3.mp3')
 
-
-
 class Ball:
     def __init__(self, x, y, radius, color):
         self.x = x
@@ -251,7 +249,6 @@ class Wizard:
         if wizard_rect.colliderect(ball_rect):
             hit_sound.play()
             # Calculate damage based on ball velocity
-            pygame.mixer.music.load('assets/sfx/hit.mp3')
             damage = math.sqrt(ball.velocity_x**2 + ball.velocity_y**2) * 4
             self.health -= damage
 
@@ -431,6 +428,9 @@ class Projectile(State):
         if self.finished:
             if keys[pygame.K_RETURN]:
                 self.game.projectile_boss_bgm.stop()
+                self.game.post_boss_bgm.play(-1)
+                self.game.bossDefeated = True
+                self.game.bossDefeatedChanged = True
                 self.exit_state()
 
         if action["R"]:

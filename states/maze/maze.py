@@ -126,10 +126,11 @@ class Game:
     def show_go_screen(self):
         pass
 
-# create the game object
-g = Game()
-g.show_start_screen()
-while True:
-    g.new()
-    g.run()
-    g.show_go_screen()
+if __name__ == "__main__":
+    # create the game object
+    g = Game()
+    g.show_start_screen()
+    while True:
+        g.new()
+        g.run()
+        g.show_go_screen()

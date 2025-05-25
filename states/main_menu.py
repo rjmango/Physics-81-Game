@@ -3,6 +3,8 @@ from states.state import State
 from states.projectile import Projectile
 from utils.button import Button
 
+from states.bossDialogue import BossDialogue
+
 class MainMenu(State):
     def __init__(self, game):
         State.__init__(self, game)
@@ -21,8 +23,10 @@ class MainMenu(State):
 
         if self.play_button.draw(display):
             self.game.main_menu_bgm.stop()
-            projectileState = Projectile(self.game)
-            projectileState.enter_state()
+            nextState = BossDialogue(self.game)
+            # projectileState = Projectile(self.game)
+            # projectileState = Game(self.game)
+            nextState.enter_state()
         if self.quit_button.draw(display):
             print("quit")
             self.game.running = False
