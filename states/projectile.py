@@ -17,6 +17,7 @@ cannon_sound_effect = mixer.Sound('assets/sfx/cannon.mp3')
 death1 = mixer.Sound('assets/sfx/death1.mp3')
 death2 = mixer.Sound('assets/sfx/death2.mp3')
 death3 = mixer.Sound('assets/sfx/death3.mp3')
+blipSound = mixer.Sound('assets/sfx/dialogue-blip.mp3')
 
 class Ball:
     def __init__(self, x, y, radius, color):
@@ -416,13 +417,17 @@ class Projectile(State):
         # Code for displaying screens
 
     def get_events(self, action):
+        blip = blipSound
+
         keys = pygame.key.get_pressed()
         if not self.paused:
             if keys[pygame.K_TAB]:
+                blip.play()
                 self.paused = True
         
         if self.paused:
             if keys[pygame.K_RETURN]:
+                blip.play()
                 self.paused = False
         
         if self.finished:
