@@ -3,7 +3,6 @@ import os
 
 from states.main_menu import MainMenu
 # check newlymade state
-# from states.<state name> import <state name>
 
 
 class Game:
@@ -21,6 +20,10 @@ class Game:
         # Game logic information
         self.running = True
         self.state_stack = []
+        self.bossDefeated = False
+        self.bossDefeatedChanged = False
+
+        self.actions = {"SPACE": False, "LEFT": False, "RIGHT": False, "UP": False, "DOWN": False, "R": False}
 
         # initialize dependencies
         self.load_assets()
@@ -44,9 +47,34 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.playing = False
+                if event.key == pygame.K_SPACE:
+                    self.actions["SPACE"] = True
+                if event.key == pygame.K_LEFT:
+                    self.actions["LEFT"] = True
+                if event.key == pygame.K_RIGHT:
+                    self.actions["RIGHT"] = True
+                if event.key == pygame.K_UP:
+                    self.actions["UP"] = True
+                if event.key == pygame.K_DOWN:
+                    self.actions["DOWN"] = True
+                if event.key == pygame.K_r:
+                    self.actions["R"] = True
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE:
+                    self.actions["SPACE"] = False
+                if event.key == pygame.K_LEFT:
+                    self.actions["LEFT"] = False
+                if event.key == pygame.K_RIGHT:
+                    self.actions["RIGHT"] = False
+                if event.key == pygame.K_UP:
+                    self.actions["UP"] = False
+                if event.key == pygame.K_DOWN:
+                    self.actions["DOWN"] = False
+                if event.key == pygame.K_r:
+                    self.actions["R"] = False
 
     def update(self):
-        self.state_stack[-1].update()
+        self.state_stack[-1].update(self.actions)
     
     def render(self):
         self.state_stack[-1].render(self.game_canvas)
@@ -66,6 +94,7 @@ class Game:
 
         # for testing only !!!
         # self.main_menu = <state name>(self)
+        self.main_menu = MainMenu(self)
         self.state_stack.append(self.main_menu)
     
     def load_background_asset(self, filepath):
@@ -75,6 +104,9 @@ class Game:
     
     def load_sfx(self):
         self.main_menu_bgm = pygame.mixer.Sound('assets/sfx/main-menu-bgm.mp3')
+        self.projectile_boss_bgm = pygame.mixer.Sound('assets/sfx/projectile-bgm.mp3')
+        self.pre_boss_bgm = pygame.mixer.Sound('assets/sfx/pre-boss-fight.mp3')
+        self.post_boss_bgm = pygame.mixer.Sound('assets/sfx/post-boss-fight.wav')
     
 if __name__ == "__main__":
     game = Game()
