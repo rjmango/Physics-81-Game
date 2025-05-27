@@ -18,14 +18,14 @@ death3 = mixer.Sound('assets/sfx/death3.mp3')
 blipSound = mixer.Sound('assets/sfx/dialogue-blip.mp3')
 
 class Ball:
-    def __init__(self, x, y, radius, color):
+    def __init__(self, x, y, radius, color, screen_height):
         self.x = x
         self.y = y
         self.radius = radius
         self.color = color
         self.velocity_x = 0
         self.velocity_y = 0
-        self.gravity = 0.3
+        self.gravity = 0.3 * 682/screen_height
         self.elasticity = 0.7
         self.friction = 0.99
         self.launched = False
