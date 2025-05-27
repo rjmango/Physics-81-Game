@@ -2,9 +2,7 @@ from states.state import State
 from utils.spritesheet import SpriteSheet
 from pygame import mixer
 import pygame
-import sys
 import math
-import os
 import time
 import random
 
@@ -135,10 +133,10 @@ class Cannon:
         end_x = self.x + math.cos(angle_rad) * self.base_length
         end_y = self.y - math.sin(angle_rad) * self.base_length
 
-        surface.blit(self.cannon_base_sprite, (0, self.game.SCREEN_HEIGHT - 100))
+        surface.blit(self.cannon_base_sprite, (0, self.game.SCREEN_HEIGHT * (9/10) - 32))
         
         pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.width)
-        pygame.draw.line(surface, self.color, (self.x, self.y), (end_x, end_y), self.width)
+        pygame.draw.line(surface, self.color, (int(self.x), int(self.y)), (end_x, end_y), self.width)
         
         # surface.blit(rotated, (0, 550))
         
@@ -151,8 +149,8 @@ class Cannon:
     def load_assets(self):
         # Load cannon image
         self.cannon_head_sprite = pygame.image.load("assets/sprites/cannon-head.png").convert_alpha()
-        self.cannon_head_sprite = pygame.transform.scale(self.cannon_head_sprite, (self.game.SCREEN_WIDTH//10, self.game.SCREEN_HEIGHT//10))
-        self.cannon_head_sprite = pygame.transform.flip(self.cannon_head_sprite, True, False)
+        self.cannon_head_sprite = pygame.transform.scale(self.cannon_head_sprite, (self.game.SCREEN_WIDTH/10, self.game.SCREEN_HEIGHT/10))
+        # self.cannon_head_sprite = pygame.transform.flip(self.cannon_head_sprite, True, False)
 
         self.cannon_base_sprite = pygame.image.load("assets/sprites/cannon-base.png").convert_alpha()
         self.cannon_base_sprite = pygame.transform.scale(self.cannon_base_sprite, (self.game.SCREEN_WIDTH//15, self.game.SCREEN_HEIGHT//10))
@@ -225,7 +223,6 @@ class Wizard:
                     self.relocate()
                     self.current_sprite = self.idle_sprites
 
-    
     def draw(self, surface):
         # Draw wizard
         toDisplay = pygame.transform.scale(self.current_sprite[self.current_frame], (self.width, self.height))
@@ -297,8 +294,8 @@ class Projectile(State):
         )
         
         self.cannon = Cannon(
-            x=37, 
-            y=self.GAME_H - 85,
+            x=self.game.SCREEN_WIDTH//30 + self.game.SCREEN_WIDTH//400, 
+            y=self.game.SCREEN_HEIGHT * (9/10) - 32 + self.game.SCREEN_HEIGHT/10 * 0.28,
             length=50,
             width=25,
             game=self.game
@@ -346,7 +343,6 @@ class Projectile(State):
                 self.elapsed_time = 0
                 self.start_countdown = True
 
-        
         if not self.ball.launched:
             angle_rad = math.radians(self.cannon.angle)
             self.ball.x = self.cannon.x + math.cos(angle_rad) * (self.cannon.base_length + self.ball.radius)
@@ -402,7 +398,6 @@ class Projectile(State):
             text_surface = self.font.render(text, True, (255, 255, 255))
             display.blit(text_surface, (10, 10 + i * 25))
         
-
         if self.paused:
             image_width, image_height = self.paused_modal.get_size()
             x_centered = self.game.SCREEN_WIDTH // 2 - image_width // 2
@@ -446,8 +441,7 @@ class Projectile(State):
             self.charging = True
         if action["SPACE"] == False and self.charging and not self.wizard.defeated:
             self.charging = False
-            scaled_cannon_power = (self.game.SCREEN_WIDTH/42) * (self.cannon.power/25)
-            print(self.game.SCREEN_WIDTH/42)
+            scaled_cannon_power = (self.game.SCREEN_WIDTH/41) * (self.cannon.power/25) * (self.game.SCREEN_WIDTH/1024)
             self.ball.launch(self.cannon.angle, scaled_cannon_power)
             self.cannon.power = 2.5
 
@@ -459,7 +453,7 @@ class Projectile(State):
                 self.cannon.angle -= 0.5
         
         if self.charging and self.cannon.power < 25:
-            self.cannon.power += 0.1
+            self.cannon.power += 0.2
     
     def reset_ball(self):
         self.ball.launched = False
