@@ -230,9 +230,9 @@ class Game():
     def render(self):
         self.game_canvas.blit(self.bg, (0,0))
         
-        # Draw ground
-        pygame.draw.rect(self.game_canvas, (100, 100, 100), 
-                        (0, self.GAME_H - 20, self.GAME_W, 20))
+        # # Draw ground
+        # pygame.draw.rect(self.game_canvas, (100, 100, 100), 
+        #                 (0, self.GAME_H - 20, self.GAME_W, 20))
         
         # Draw platforms
         for platform in self.platforms:

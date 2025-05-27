@@ -1,6 +1,6 @@
 import pygame as pg
-from settings import *
-from tilesheet import *
+from .settings import *
+from .tilesheet import *
 
 class Map:
     def __init__(self, filename):

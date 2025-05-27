@@ -1,6 +1,6 @@
 import pygame as pg
-from settings import *
-from tilesheet import *
+from .settings import *
+from .tilesheet import *
 vec = pg.math.Vector2
 
 class Player(pg.sprite.Sprite):
