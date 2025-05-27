@@ -4,6 +4,7 @@ from states.projectile import Projectile
 from utils.button import Button
 
 from states.bossDialogue import BossDialogue
+from .endingDialogue import EndingDialogue
 
 class MainMenu(State):
     def __init__(self, game):
@@ -23,6 +24,7 @@ class MainMenu(State):
 
         if self.play_button.draw(display):
             self.game.main_menu_bgm.stop()
+            # nextState = EndingDialogue(self.game)
             nextState = BossDialogue(self.game)
             # projectileState = Projectile(self.game)
             # projectileState = Game(self.game)

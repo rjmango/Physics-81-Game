@@ -17,6 +17,7 @@ cannon_sound_effect = mixer.Sound('assets/sfx/cannon.mp3')
 death1 = mixer.Sound('assets/sfx/death1.mp3')
 death2 = mixer.Sound('assets/sfx/death2.mp3')
 death3 = mixer.Sound('assets/sfx/death3.mp3')
+blipSound = mixer.Sound('assets/sfx/dialogue-blip.mp3')
 
 class Ball:
     def __init__(self, x, y, radius, color):
@@ -52,6 +53,7 @@ class Ball:
         angle_rad = math.radians(angle)
         self.velocity_x = math.cos(angle_rad) * power
         self.velocity_y = -math.sin(angle_rad) * power
+        print(self.velocity_x, self.velocity_y)
         self.launched = True
     
     def get_rect(self):
@@ -416,14 +418,19 @@ class Projectile(State):
         # Code for displaying screens
 
     def get_events(self, action):
+        blip = blipSound
+
         keys = pygame.key.get_pressed()
         if not self.paused:
             if keys[pygame.K_TAB]:
+                blip.play()
                 self.paused = True
         
         if self.paused:
             if keys[pygame.K_RETURN]:
+                blip.play()
                 self.paused = False
+            return
         
         if self.finished:
             if keys[pygame.K_RETURN]:
@@ -439,7 +446,9 @@ class Projectile(State):
             self.charging = True
         if action["SPACE"] == False and self.charging and not self.wizard.defeated:
             self.charging = False
-            self.ball.launch(self.cannon.angle, self.cannon.power)
+            scaled_cannon_power = (self.game.SCREEN_WIDTH/42) * (self.cannon.power/25)
+            print(self.game.SCREEN_WIDTH/42)
+            self.ball.launch(self.cannon.angle, scaled_cannon_power)
             self.cannon.power = 2.5
 
         keys = pygame.key.get_pressed()
@@ -450,7 +459,7 @@ class Projectile(State):
                 self.cannon.angle -= 0.5
         
         if self.charging and self.cannon.power < 25:
-            self.cannon.power += 0.2
+            self.cannon.power += 0.1
     
     def reset_ball(self):
         self.ball.launched = False
