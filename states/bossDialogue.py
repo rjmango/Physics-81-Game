@@ -134,10 +134,18 @@ class BossDialogue(State):
             knightImage = self.knight_inactive_sprites[self.current_knight_frame]
             wizardImage = self.wizard_sprites[self.current_wizard_frame]
 
-        knightDisplay = pygame.transform.scale(knightImage, (112*8, 96*8))
-        wizardDisplay = pygame.transform.scale(wizardImage, (1500, 1500))
-        wizardDisplay = pygame.transform.flip(wizardDisplay, 1, 0)
+
+        scaled_knight_width = int(self.game.SCREEN_WIDTH / 1.1428)
+        scaled_knight_height = int(self.game.SCREEN_HEIGHT / 0.888)
         
+        scaled_wizard_dimensions = int(self.game.SCREEN_WIDTH / 0.6826)
+
+        # knightDisplay = pygame.transform.scale(knightImage, (112*8, 96*8))
+        # wizardDisplay = pygame.transform.scale(wizardImage, (1500, 1500))
+
+        knightDisplay = pygame.transform.scale(knightImage, (scaled_knight_width, scaled_knight_height))
+        wizardDisplay = pygame.transform.scale(wizardImage, (scaled_wizard_dimensions, scaled_wizard_dimensions))
+        wizardDisplay = pygame.transform.flip(wizardDisplay, 1, 0)        
 
         left_sprite_x, left_sprite_y = -1 * self.game.SCREEN_WIDTH/4.1, -1 * self.game.SCREEN_HEIGHT/4.55
         right_sprite_x, right_sprite_y = self.game.SCREEN_WIDTH/20.48, -1 * self.game.SCREEN_HEIGHT/1.515
