@@ -12,8 +12,10 @@ class Game:
         
         # Window display information
         self.GAME_W, self.GAME_H = 1920, 1280
+        print(f"Game Dimensions: {self.GAME_W} x {self.GAME_H}")
         self.SCREEN_WIDTH = pygame.display.Info().current_w * 6 // 8
         self.SCREEN_HEIGHT = self.SCREEN_WIDTH * 2//3
+        print(f"Game Dimensions: {self.SCREEN_WIDTH} x {self.SCREEN_HEIGHT}")
         self.game_canvas = pygame.Surface((self.GAME_W, self.GAME_H))
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         

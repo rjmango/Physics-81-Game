@@ -26,7 +26,7 @@ class MainMenu(State):
             self.game.main_menu_bgm.stop()
             # nextState = EndingDialogue(self.game)
             nextState = BossDialogue(self.game)
-            # projectileState = Projectile(self.game)
+            # nextState = Projectile(self.game)
             # projectileState = Game(self.game)
             nextState.enter_state()
         if self.quit_button.draw(display):

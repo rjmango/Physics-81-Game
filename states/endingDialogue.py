@@ -127,7 +127,6 @@ class EndingDialogue(State):
         # render background in screen
         display.blit(self.bg, (0,0))
 
-
         if self.both_turn:
             knightImage = self.knight_sprites[self.current_knight_frame]
             princessImage = self.princess_sprites[self.current_princess_frame]
@@ -139,11 +138,20 @@ class EndingDialogue(State):
                 knightImage = self.knight_inactive_sprites[self.current_knight_frame]
                 princessImage = self.princess_sprites[self.current_princess_frame]
 
-        knightDisplay = pygame.transform.scale(knightImage, (112*8, 96*8))
-        princessDisplay = pygame.transform.scale(princessImage, (80*11, 64*11))
+        scaled_knight_width = int(self.game.SCREEN_WIDTH / 1.1428)
+        scaled_knight_height = int(self.game.SCREEN_HEIGHT / 0.888)
+
+        scaled_princess_width = int(self.game.SCREEN_WIDTH / 1.1636)
+        scaled_princess_height = int(self.game.SCREEN_HEIGHT / 0.96875)
+
+        knightDisplay = pygame.transform.scale(knightImage, (scaled_knight_width, scaled_knight_height))
+        princessDisplay = pygame.transform.scale(princessImage, (scaled_princess_width, scaled_princess_height))
         
-        display.blit(knightDisplay, (-250,-150))
-        display.blit(princessDisplay, (350, -100))
+        left_sprite_x, left_sprite_y = -1 * self.game.SCREEN_WIDTH/4.1, -1 * self.game.SCREEN_HEIGHT/4.55
+        right_sprite_x, right_sprite_y = self.game.SCREEN_WIDTH/2.925, -1 * self.game.SCREEN_HEIGHT/6.82
+
+        display.blit(knightDisplay, (left_sprite_x, left_sprite_y))
+        display.blit(princessDisplay, (right_sprite_x, right_sprite_y))
 
         # Create transparent surface
         transparent_surface = pygame.Surface((self.game.SCREEN_WIDTH, 250), pygame.SRCALPHA)
