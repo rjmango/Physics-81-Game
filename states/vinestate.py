@@ -66,7 +66,7 @@ class Vine:
         if self.has_problem:
             font = pg.font.Font(None, 40)
             problem_text = [
-                "BE QUICK TO AVOID FALLING IN THE SWAMP!",
+                "There's a restriction on the knight when he's on the vine...",
                 "ONLY ONE VINE CAN HOLD YOUR WEIGHT!",
                 "What is the minimum tension that the vine",
                 "should withstand to avoid snapping?",
