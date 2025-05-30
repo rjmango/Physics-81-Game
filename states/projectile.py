@@ -294,7 +294,7 @@ class Projectile(State):
         )
         
         self.cannon = Cannon(
-            x=self.game.SCREEN_WIDTH//30 + self.game.SCREEN_WIDTH//400, 
+            x= (0 + self.game.SCREEN_WIDTH // 30),
             y=self.game.SCREEN_HEIGHT * (9/10) - 32 + self.game.SCREEN_HEIGHT/10 * 0.28,
             length=50,
             width=25,
@@ -305,7 +305,8 @@ class Projectile(State):
             x=self.cannon.x,
             y=self.cannon.y,
             radius=15,
-            color=(255, 0, 0)
+            color=(255, 0, 0),
+            screen_height=self.game.SCREEN_HEIGHT
         )
         
         # Create platforms
