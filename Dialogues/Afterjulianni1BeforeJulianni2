@@ -8,7 +8,7 @@ window = pygame.display.set_mode((w, h))
 pygame.display.set_caption("Dialogue Box Example")
 
 # Load and scale background
-background = pygame.image.load("pngs/vines.jpg").convert()
+background = pygame.image.load("pngs/vinebg.jpg").convert()
 background = pygame.transform.scale(background, (w, h))
 
 # Load sprites

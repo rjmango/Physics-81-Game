@@ -10,7 +10,8 @@ SCREEN_WIDTH = 1280 #1920 1280 720
 SCREEN_HEIGHT = 853 #1280 853 480
 FPS = 60
 TILESIZE = 110
-BROWN = (181, 151, 108) 
+BROWN = (181, 151, 108)
+SHOW_CONGRATS_EVENT = pygame.USEREVENT + 1 
 
 import pygame
 import math
@@ -19,7 +20,8 @@ class LightBeam:
     def __init__(self, game, start_pos, direction, max_bounces=5):
         self.game = game
         self.start_pos = start_pos
-        self.direction = direction
+        length = math.hypot(direction[0], direction[1])
+        self.direction = (direction[0]/length, direction[1]/length)
         self.max_bounces = max_bounces
 
     def reflect(self, direction, normal):
@@ -72,7 +74,7 @@ class LightBeam:
             if closest_point:
                 points.append(closest_point)
                 if is_reflective:
-                    normal = closest_object.get_normal()
+                    normal = closest_object.get_normal(direction)
                     dot = direction[0] * normal[0] + direction[1] * normal[1]
                     if abs(dot) > 0.98:  # if almost parallel, don't reflect again
                         break
@@ -89,8 +91,12 @@ class LightBeam:
                 for i in range(len(points) - 1):
                     beam_segment = (points[i], points[i+1])
                     if self.line_rect_intersect(beam_segment[0], beam_segment[1], sprite.rect):
-                        sprite.triggered = True
-                        self.game.congratulations()
+                        current_time = pygame.time.get_ticks()
+                        if sprite.hit_start_time is None:
+                            sprite.hit_start_time = current_time
+                        elif current_time - sprite.hit_start_time >= 1000 and not sprite.triggered:
+                            sprite.triggered = True
+                            pygame.event.post(pygame.event.Event(SHOW_CONGRATS_EVENT))
                         break
 
         return points
@@ -173,16 +179,17 @@ class Orb(pygame.sprite.Sprite):
         orb_path = os.path.join(base_path, '..', 'assets', 'stage 2', 'orb.png')
         if os.path.exists(orb_path):
             self.image = pygame.image.load(orb_path).convert_alpha()
-            self.image = pygame.transform.scale(self.image, (TILESIZE, TILESIZE))
+            self.image = pygame.transform.scale(self.image, (TILESIZE+50, TILESIZE+50))
         else:
             self.image = pygame.Surface((TILESIZE, TILESIZE), pygame.SRCALPHA)
             pygame.draw.circle(self.image, (0, 255, 255), (TILESIZE // 2, TILESIZE // 2), TILESIZE // 3)
 
         self.rect = self.image.get_rect()
-        self.rect.topleft = (x * TILESIZE -25, y * TILESIZE - 20)
+        self.rect.topleft = (x * TILESIZE + 12, y * TILESIZE - 25)
 
         # ✅ This line is required:
         self.triggered = False
+        self.hit_start_time = None
 
 class Mirror(pygame.sprite.Sprite):
     def __init__(self, game, x, y, angle=45):
@@ -231,15 +238,22 @@ class Mirror(pygame.sprite.Sprite):
         return ((x - dx, y - dy), (x + dx, y + dy))
 
 
-    def get_normal(self):
+    def get_normal(self, incoming_dir):
         (x1, y1), (x2, y2) = self.get_surface_line()
         dx = x2 - x1
         dy = y2 - y1
         length = math.hypot(dx, dy)
         surface_vec = (dx / length, dy / length)
-        # Get perpendicular (normal)
-        normal = (-surface_vec[1], surface_vec[0])
-        return normal
+
+        # Get both possible normals (perpendiculars)
+        normal1 = (-surface_vec[1], surface_vec[0])
+        normal2 = (surface_vec[1], -surface_vec[0])
+
+        # Pick the normal that faces against the incoming direction
+        dot1 = incoming_dir[0]*normal1[0] + incoming_dir[1]*normal1[1]
+        dot2 = incoming_dir[0]*normal2[0] + incoming_dir[1]*normal2[1]
+
+        return normal1 if dot1 < dot2 else normal2
 
 class Map:
     def __init__(self, filename):
@@ -260,13 +274,14 @@ class Game:
         pygame.display.set_caption("Pygame Background with Class")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.light_beam = LightBeam(self, (0, SCREEN_HEIGHT // 2), (1, 0))
+        self.light_beam = LightBeam(self, (0, SCREEN_HEIGHT // 2), (1, 0), max_bounces=10)
         # Construct the correct path to the background image
         base_path = os.path.dirname(os.path.abspath(__file__))
         bg_path = os.path.join(base_path, '..', 'assets', 'stage 2', 'test.png')
         bg_path = os.path.normpath(bg_path)
         self.background = pygame.image.load(bg_path).convert()
         self.background = pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.showing_congrats = False
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -282,6 +297,11 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
+            elif event.type == SHOW_CONGRATS_EVENT:
+                if not self.showing_congrats:
+                    self.showing_congrats = True
+                    self.congratulations()
+                    pygame.time.set_timer(SHOW_CONGRATS_EVENT, 0)  # stop the timer
 
     def load_data(self):    
         game_folder = path.dirname(__file__)
