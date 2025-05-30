@@ -1,4 +1,4 @@
-import pygame as pg 
+import pygame as pg
 import sys
 import random
 import math
@@ -9,12 +9,12 @@ SCREEN_HEIGHT = 1280
 FPS = 60
 
 class Vine:
-    def __init__(self, x, y, width=1, height=10, snap_time=2, has_problem=False):
+    def __init__(self, x, y, width=1, height=10, snap_time=2, has_problem=False, swinging=True):
         self.original_x = x
         self.original_y = y
         self.width = width
         self.height = height
-        self.rect = pg.Rect(x - width//2, y + 20, width, height)
+        self.rect = pg.Rect(x - width // 2, y + 20, width, height)
         self.angle = random.uniform(-0.5, 0.5)
         self.angular_vel = 0
         self.length = 6
@@ -22,6 +22,7 @@ class Vine:
         self.time_elapsed = 0
         self.snapped = False
         self.has_problem = has_problem
+        self.swinging = swinging
         self.knight_attached = False
         self.mass = 56
         self.speed = 5
@@ -30,17 +31,21 @@ class Vine:
 
     def update(self, dt, knight_on_vine):
         if not self.snapped:
-            if not self.knight_attached or not knight_on_vine:
-                angular_accel = (-self.g / self.length) * math.sin(self.angle)
-                self.angular_vel += angular_accel * dt
-                self.angle += self.angular_vel * dt
-                self.angular_vel *= 0.995
-            
-            swing_x = math.sin(self.angle) * self.length * 50
-            swing_y = (math.cos(self.angle)-1) * self.length * 50
-            
+            if self.swinging:
+                if not self.knight_attached or not knight_on_vine:
+                    angular_accel = (-self.g / self.length) * math.sin(self.angle)
+                    self.angular_vel += angular_accel * dt
+                    self.angle += self.angular_vel * dt
+                    self.angular_vel *= 0.995
+
+                swing_x = math.sin(self.angle) * self.length * 50
+                swing_y = (math.cos(self.angle) - 1) * self.length * 50
+            else:
+                swing_x = 0
+                swing_y = 0
+
             self.rect.centerx = self.original_x + swing_x
-            self.rect.top = self.original_y + swing_y 
+            self.rect.top = self.original_y + swing_y
 
             if knight_on_vine:
                 if not self.knight_attached:
@@ -61,18 +66,19 @@ class Vine:
         if self.has_problem:
             font = pg.font.Font(None, 40)
             problem_text = [
-                f"BE QUICK TO AVOID FALLING IN THE SWAMP!",
-                f"ONLY ONE VINE CAN HOLD YOUR WEIGHT!",
-                f"What is the minimum tension that the vine",
-                f"should withstand to avoid snapping?",
+                "BE QUICK TO AVOID FALLING IN THE SWAMP!",
+                "ONLY ONE VINE CAN HOLD YOUR WEIGHT!",
+                "What is the minimum tension that the vine",
+                "should withstand to avoid snapping?",
                 f"Mass: {self.mass}kg | Length of vine: {self.length}m",
                 f"Speed: {self.speed}m/s | g: {self.g}m/s²",
-                f"A) 650N B) 500N C) 450N D) 783N",
-                f"A) 783N B) 650N C) 450N D) 500N"
+                "A) 650N B) 500N C) 450N D) 783N",
+                "A) 783N B) 650N C) 450N D) 500N"
             ]
             for i, text in enumerate(problem_text):
                 text_surface = font.render(text, True, (255, 255, 255))
                 surface.blit(text_surface, (20, 120 + i * 30))
+
 
 class GameState:
     def __init__(self, game):
@@ -94,7 +100,9 @@ class GameState:
         self.can_jump = True
 
         if self.current_round == 1:
-            self.ground_rect = pg.Rect(-430, 1090, self.ground_surface.get_width(), self.ground_surface.get_height())
+            self.ground_rect = pg.Rect(-430, 1090,
+                                       self.ground_surface.get_width(),
+                                       self.ground_surface.get_height())
             self.initial_vines = [
                 Vine(550, 850, snap_time=2.0),
                 Vine(950, 650, snap_time=1.5),
@@ -103,14 +111,16 @@ class GameState:
             ]
             self.knight_rect = self.knight_surface.get_rect(bottomleft=(100, 1100))
         else:  # Round 2
-            self.ground_rect = pg.Rect(1920, 1090, self.ground_surface.get_width(), self.ground_surface.get_height())
+            self.ground_rect = pg.Rect(1920, 1090,
+                                       self.ground_surface.get_width(),
+                                       self.ground_surface.get_height())
             self.initial_vines = [
-                Vine(400, 800, snap_time=999),        # Vine A - Stable
-                Vine(700, 600, snap_time=1.5),        # Vine B - Snaps
-                Vine(1000, 500, snap_time=1.5),       # Vine C - Snaps
-                Vine(1400, 700, snap_time=1.0, has_problem=True)  # Vine D - Snaps
+                Vine(400, 800, snap_time=999, swinging=False),   # Vine A - Fixed
+                Vine(700, 600, snap_time=1.5),                   # Vine B - Snaps
+                Vine(1000, 500, snap_time=1.5),                  # Vine C - Snaps
+                Vine(1400, 780, snap_time=1.0, has_problem=True, swinging=False) # Vine D - Snaps & Problem
             ]
-            self.knight_rect = self.knight_surface.get_rect(bottomleft=(400, 800))  # On Vine A
+            self.knight_rect = self.knight_surface.get_rect(bottomleft=(400, 800))
 
         self.initial_vines[0].length = 7
         self.initial_vines[1].length = 6
@@ -120,14 +130,28 @@ class GameState:
         self.reset_round()
 
     def reset_round(self):
-        self.vines = [Vine(vine.original_x, vine.original_y, vine.width, vine.height, vine.snap_time, vine.has_problem) 
-                     for vine in self.initial_vines]
+        self.vines = [
+            Vine(vine.original_x,
+                 vine.original_y,
+                 vine.width,
+                 vine.height,
+                 vine.snap_time,
+                 vine.has_problem,
+                 vine.swinging)
+            for vine in self.initial_vines
+        ]
         for i, vine in enumerate(self.vines):
             vine.length = self.initial_vines[i].length
+
         if self.current_round == 2:
-            self.knight_rect.bottomleft = (self.vines[0].original_x, self.vines[0].original_y)  # Set on Vine A
+            # Start the knight on Vine A
+            self.knight_rect.bottomleft = (
+                self.vines[0].original_x,
+                self.vines[0].original_y
+            )
         else:
             self.knight_rect.bottomleft = (100, 1100)
+
         self.knight_gravity = 0
         self.on_vine = False
         self.gravity_enabled = False
@@ -187,7 +211,8 @@ class GameState:
             self.can_jump = True
         else:
             self.can_jump = False
-        if actions.get("jump") and self.can_jump:   
+
+        if actions.get("jump") and self.can_jump:
             self.knight_gravity = -25
             self.on_vine = False
             self.gravity_enabled = True
@@ -202,16 +227,16 @@ class GameState:
 
         self.on_vine = False
         current_vine = None
-        
+
         for vine in self.vines:
             collided = (
-                not vine.snapped and
-                self.knight_rect.bottom >= vine.rect.top and
-                self.knight_rect.top <= vine.rect.bottom and
-                self.knight_rect.right >= vine.rect.left and
-                self.knight_rect.left <= vine.rect.right and
-                self.knight_gravity >= 0 and
-                abs(self.knight_rect.bottom - vine.rect.top) <= 15
+                not vine.snapped
+                and self.knight_rect.bottom >= vine.rect.top
+                and self.knight_rect.top <= vine.rect.bottom
+                and self.knight_rect.right >= vine.rect.left
+                and self.knight_rect.left <= vine.rect.right
+                and self.knight_gravity >= 0
+                and abs(self.knight_rect.bottom - vine.rect.top) <= 15
             )
 
             if collided:
@@ -237,24 +262,29 @@ class GameState:
                 self.can_jump = False
                 self.knight_speed = 0
 
+        # If the knight falls off the bottom of the screen:
         if self.knight_rect.top > SCREEN_HEIGHT:
             if self.reached_final_vine and self.current_round == 1:
+                # Move on to Round 2
                 print("NEXTROUND")
                 self.current_round = 2
                 self.initialize_round()
             else:
-                self.reset_round()
+                # Fell—restart from Round 1
+                print("FELL - BACK TO ROUND 1")
+                self.current_round = 1
+                self.initialize_round()
 
     def render(self, display):
         display.blit(self.background_surface, (0, 0))
         display.blit(self.water_surface, (0, 1100))
-        
+
         if self.current_round == 1:
             display.blit(self.ground_surface, (0, 875))
-        
+
         scaled_vine = pg.transform.scale(self.background_vine, (1900, 1000))
         display.blit(scaled_vine, (350, -120))
-        
+
         for vine in self.vines:
             vine.draw(display, self.vine_surface)
 
@@ -263,10 +293,11 @@ class GameState:
 
         knight_surf = self.knight_surface_right if self.facing_right else self.knight_surface_left
         display.blit(knight_surf, self.knight_rect)
-        
+
         font = pg.font.Font(None, 50)
         round_text = font.render(f"Round: {self.current_round}/{self.max_rounds}", True, (255, 255, 255))
         display.blit(round_text, (20, 20))
+
 
 class Game:
     def __init__(self):
@@ -304,6 +335,7 @@ class Game:
             self.state.render(self.screen)
             pg.display.flip()
             self.clock.tick(FPS)
+
 
 if __name__ == "__main__":
     game = Game()
