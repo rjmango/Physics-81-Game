@@ -28,8 +28,8 @@ class MainMenu(State):
             # nextState = BossDialogue(self.game)
             # nextState = EndingDialogue(self.game)
             # nextState = Projectile(self.game)
-            # nextState = MazeState(self.game)
-            nextState = VineState(self.game)
+            # nextState = VineState(self.game)
+            nextState = MazeState(self.game)
             nextState.enter_state()
         if self.quit_button.draw(display):
             print("quit")

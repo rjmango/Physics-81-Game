@@ -5,19 +5,18 @@ import math
 from .state import State
 from os import path
 
-# SCREEN_WIDTH = 1920
-# SCREEN_HEIGHT = 1280
-SCREEN_WIDTH = 1024
-SCREEN_HEIGHT = 682
-FPS = 60
-
 class Vine:
-    def __init__(self, x, y, width=1, height=10, snap_time=2, has_problem=False, swinging=True):
-        self.original_x = x
-        self.original_y = y
-        self.width = width
-        self.height = height
-        self.rect = pg.Rect(x - width // 2, y + 20, width, height)
+    def __init__(self, game, x, y, width=1, height=10, snap_time=2, has_problem=False, swinging=True):
+        self.game = game
+        # Scale positions based on screen size
+        self.original_x = x * self.game.SCREEN_WIDTH / 1920
+        self.original_y = y * self.game.SCREEN_HEIGHT / 1280
+        self.width = width * self.game.SCREEN_WIDTH / 1920
+        self.height = height * self.game.SCREEN_HEIGHT / 1280
+        self.rect = pg.Rect(self.original_x - self.width // 2, 
+                           self.original_y + 20 * self.game.SCREEN_HEIGHT / 1280, 
+                           self.width, 
+                           self.height)
         self.angle = random.uniform(-0.5, 0.5)
         self.angular_vel = 0
         self.length = 6
@@ -41,8 +40,8 @@ class Vine:
                     self.angle += self.angular_vel * dt
                     self.angular_vel *= 0.995
 
-                swing_x = math.sin(self.angle) * self.length * 50
-                swing_y = (math.cos(self.angle) - 1) * self.length * 50
+                swing_x = math.sin(self.angle) * self.length * 50 * self.game.SCREEN_WIDTH / 1920
+                swing_y = (math.cos(self.angle) - 1) * self.length * 50 * self.game.SCREEN_HEIGHT / 1280
             else:
                 swing_x = 0
                 swing_y = 0
@@ -62,12 +61,13 @@ class Vine:
 
     def draw(self, surface, vine_image):
         if not self.snapped:
-            offset_y = -60
+            offset_y = -60 * self.game.SCREEN_HEIGHT / 1280
             image_rect = vine_image.get_rect(center=(self.rect.centerx, self.rect.top + offset_y))
             surface.blit(vine_image, image_rect.topleft)
 
         if self.has_problem:
-            font = pg.font.Font(None, 40)
+            font_size = int(40 * min(self.game.SCREEN_WIDTH / 1920, self.game.SCREEN_HEIGHT / 1280))
+            font = pg.font.Font(None, font_size)
             problem_text = [
                 "There's a restriction on the knight when he's on the vine...",
                 "ONLY ONE VINE CAN HOLD YOUR WEIGHT!",
@@ -80,7 +80,8 @@ class Vine:
             ]
             for i, text in enumerate(problem_text):
                 text_surface = font.render(text, True, (255, 255, 255))
-                surface.blit(text_surface, (20, 120 + i * 30))
+                y_pos = 120 * self.game.SCREEN_HEIGHT / 1280 + i * 30 * self.game.SCREEN_HEIGHT / 1280
+                surface.blit(text_surface, (20 * self.game.SCREEN_WIDTH / 1920, y_pos))
 
 class VineState(State):
     def __init__(self, game):
@@ -93,10 +94,15 @@ class VineState(State):
         self.max_rounds = 2
         self.initialize_round()
         self.last_time = pg.time.get_ticks()
+        self.knight_speed = 5 * self.game.SCREEN_WIDTH / 1920
+        self.knight_gravity = 0
+        self.jump_force = -25 * self.game.SCREEN_HEIGHT / 1280
+        self.paused = True
+        self.finished = False
+        self.finishedTimer = 0
 
     def initialize_round(self):
         self.knight_gravity = 0
-        self.knight_speed = 5
         self.on_vine = False
         self.facing_right = True
         self.gravity_enabled = False
@@ -104,27 +110,33 @@ class VineState(State):
         self.can_jump = True
 
         if self.current_round == 1:
-            self.ground_rect = pg.Rect(-430, self.ground_position,
-                                       self.ground_surface.get_width(),
-                                       self.ground_surface.get_height())
+            self.ground_rect = pg.Rect(-430 * self.game.SCREEN_WIDTH / 1920, 
+                                      self.ground_position + self.ground_surface.get_height()//1.5,
+                                      self.ground_surface.get_width(),
+                                      self.ground_surface.get_height())
             self.initial_vines = [
-                Vine(550, 850, snap_time=2.0),
-                Vine(950, 650, snap_time=1.5),
-                Vine(1300, 520, snap_time=2.0),
-                Vine(1650, 850, snap_time=999, has_problem=True)
+                Vine(self.game, 550, 850, snap_time=2.0),
+                Vine(self.game, 950, 650, snap_time=1.5),
+                Vine(self.game, 1300, 520, snap_time=2.0),
+                Vine(self.game, 1650, 850, snap_time=999, has_problem=True)
             ]
-            self.knight_rect = self.knight_surface.get_rect(bottomleft=(100, 1100))
+            knight_start_x = 100 * self.game.SCREEN_WIDTH / 1920
+            knight_start_y = 1100 * self.game.SCREEN_HEIGHT / 1280
+            self.knight_rect = self.knight_surface.get_rect(bottomleft=(knight_start_x, knight_start_y))
         else:  # Round 2
-            self.ground_rect = pg.Rect(1920, 1090,
-                                       self.ground_surface.get_width(),
-                                       self.ground_surface.get_height())
+            self.ground_rect = pg.Rect(1920 * self.game.SCREEN_WIDTH / 1920, 
+                                      1090 * self.game.SCREEN_HEIGHT / 1280,
+                                      self.ground_surface.get_width(),
+                                      self.ground_surface.get_height())
             self.initial_vines = [
-                Vine(400, 800, snap_time=999, swinging=False),   # Vine A - Fixed
-                Vine(700, 600, snap_time=1.5),                   # Vine B - Snaps
-                Vine(1000, 500, snap_time=1.5),                  # Vine C - Snaps
-                Vine(1400, 780, snap_time=1.0, has_problem=True, swinging=False) # Vine D - Snaps & Problem
+                Vine(self.game, 400, 800, snap_time=999, swinging=False),
+                Vine(self.game, 700, 600, snap_time=1.5),
+                Vine(self.game, 1000, 500, snap_time=1.5),
+                Vine(self.game, 1400, 780, snap_time=1.0, has_problem=True, swinging=False)
             ]
-            self.knight_rect = self.knight_surface.get_rect(bottomleft=(400, 800))
+            knight_start_x = self.game.SCREEN_WIDTH / 4.8
+            knight_start_y = self.game.SCREEN_HEIGHT / 1.6
+            self.knight_rect = self.knight_surface.get_rect(bottomleft=(knight_start_x, knight_start_y))
 
         self.initial_vines[0].length = 7
         self.initial_vines[1].length = 6
@@ -135,26 +147,28 @@ class VineState(State):
 
     def reset_round(self):
         self.vines = [
-            Vine(vine.original_x,
-                 vine.original_y,
-                 vine.width,
-                 vine.height,
-                 vine.snap_time,
-                 vine.has_problem,
-                 vine.swinging)
+            Vine(self.game,
+                vine.original_x * 1920 / self.game.SCREEN_WIDTH,  # Convert back to original coordinates
+                vine.original_y * 1280 / self.game.SCREEN_HEIGHT,  # for the Vine constructor to rescale
+                vine.width * 1920 / self.game.SCREEN_WIDTH,
+                vine.height * 1280 / self.game.SCREEN_HEIGHT,
+                vine.snap_time,
+                vine.has_problem,
+                vine.swinging)
             for vine in self.initial_vines
         ]
         for i, vine in enumerate(self.vines):
             vine.length = self.initial_vines[i].length
 
         if self.current_round == 2:
-            # Start the knight on Vine A
             self.knight_rect.bottomleft = (
-                self.vines[0].original_x,
+                self.vines[0].original_x//2,
                 self.vines[0].original_y
             )
         else:
-            self.knight_rect.bottomleft = (100, 1100)
+            knight_start_x = 100 * self.game.SCREEN_WIDTH / 1920
+            knight_start_y = 1100 * self.game.SCREEN_HEIGHT / 1280
+            self.knight_rect.bottomleft = (knight_start_x, knight_start_y)
 
         self.knight_gravity = 0
         self.on_vine = False
@@ -176,9 +190,30 @@ class VineState(State):
         try:
             base_path = path.dirname(path.dirname(path.abspath(__file__)))
             def load_asset(name):
-                return pg.image.load(path.join(base_path, 'assets', 'stage 1', name)).convert_alpha()
+                img = pg.image.load(path.join(base_path, 'assets', 'stage 1', name)).convert_alpha()
+                # Scale images based on screen size
+                if name in ['pixelvinebg.png']:
+                    return pg.transform.scale(img, (self.game.SCREEN_WIDTH, self.game.SCREEN_HEIGHT))
+                elif name == 'vinetop.png':
+                    return pg.transform.scale(img, 
+                                            (int(1900 * self.game.SCREEN_WIDTH / 1920), 
+                                             int(1000 * self.game.SCREEN_HEIGHT / 1280)))
+                elif name == 'masgamay.png':
+                    return pg.transform.scale(img, 
+                                            (int(img.get_width() * self.game.SCREEN_WIDTH / 1920), 
+                                             int(img.get_height() * self.game.SCREEN_HEIGHT / 1280)))
+                elif name == 'image-removebg-preview.png':
+                    return pg.transform.scale(img, 
+                                            (int(img.get_width() * self.game.SCREEN_WIDTH / 1920), 
+                                             int(img.get_height() * self.game.SCREEN_HEIGHT / 1280)))
+                elif name == 'knightpix.png':
+                    self.knight_size = (int(img.get_width() * self.game.SCREEN_WIDTH / 1920), 
+                                       int(img.get_height() * self.game.SCREEN_HEIGHT / 1280))
+                    return pg.transform.scale(img, self.knight_size)
+                return pg.transform.scale(img, (int(img.get_width() * self.game.SCREEN_WIDTH / 1920), 
+                                       int(img.get_height() * self.game.SCREEN_HEIGHT / 1280)))
 
-            self.background_surface = load_asset('pixelvinebg.png')
+            self.background_surface = self.game.load_background_asset('assets/stage 1/pixelvinebg.png')
             self.background_vine = load_asset('vinetop.png')
             self.vine_surface = load_asset('masgamay.png')
             self.water_surface = load_asset('water(resized).png')
@@ -186,14 +221,40 @@ class VineState(State):
             self.knight_surface = load_asset('knightpix.png')
             self.knight_surface_left = pg.transform.flip(self.knight_surface, True, False)
             self.knight_surface_right = self.knight_surface
+
+            self.paused_modal = self.game.load_background_asset("assets/popups/vine-start.png")
+            self.finished_modal = self.game.load_background_asset("assets/popups/vine-end.png")
+            
+            # Scale knight rect to match scaled image
+            self.knight_rect = self.knight_surface.get_rect()
+            
             font_path = path.join(base_path, 'assets', 'stage 1', 'Pixeltype.ttf')
-            self.test_font = pg.font.Font(font_path, 50)
+            self.test_font = pg.font.Font(font_path, int(50 * min(self.game.SCREEN_WIDTH / 1920, self.game.SCREEN_HEIGHT / 1280)))
         except Exception as e:
             print(f"ASSET LOADING ERROR: {e}")
             pg.quit()
             sys.exit(1)
 
     def update(self, actions):
+
+        keys = pg.key.get_pressed()
+
+        if not self.paused:
+            if keys[pg.K_TAB]:
+                self.game.blip.play()
+                self.paused = True
+        
+        if self.paused:
+            if keys[pg.K_RETURN]:
+                self.game.blip.play()
+                self.paused = False
+            return
+        
+        if self.finished:
+            if keys[pg.K_RETURN]:
+                self.game.blip.play()
+                self.exit_state()
+        
         current_time = pg.time.get_ticks()
         dt = (current_time - self.last_time) / 1000.0
         self.last_time = current_time
@@ -208,7 +269,7 @@ class VineState(State):
             self.facing_right = True
             moved = True
 
-        if self.knight_rect.x > 100:
+        if self.knight_rect.x > 100 * self.game.SCREEN_WIDTH / 1920:
             self.gravity_enabled = True
 
         if (self.knight_rect.colliderect(self.ground_rect) or self.on_vine):
@@ -217,7 +278,7 @@ class VineState(State):
             self.can_jump = False
 
         if actions.get("SPACE") and self.can_jump:
-            self.knight_gravity = -25
+            self.knight_gravity = self.jump_force
             self.on_vine = False
             self.gravity_enabled = True
             self.can_jump = False
@@ -226,7 +287,7 @@ class VineState(State):
             self.gravity_enabled = True
 
         if self.gravity_enabled:
-            self.knight_gravity += 1
+            self.knight_gravity += 1 * self.game.SCREEN_HEIGHT / 1280
             self.knight_rect.y += self.knight_gravity
 
         self.on_vine = False
@@ -240,7 +301,7 @@ class VineState(State):
                 and self.knight_rect.right >= vine.rect.left
                 and self.knight_rect.left <= vine.rect.right
                 and self.knight_gravity >= 0
-                and abs(self.knight_rect.bottom - vine.rect.top) <= 15
+                and abs(self.knight_rect.bottom - vine.rect.top) <= 15 * self.game.SCREEN_HEIGHT / 1280
             )
 
             if collided:
@@ -248,7 +309,7 @@ class VineState(State):
                 self.knight_gravity = 0
                 self.on_vine = True
                 current_vine = vine
-                self.knight_rect.x += vine.angular_vel * 25 * dt
+                self.knight_rect.x += vine.angular_vel * 25 * dt * self.game.SCREEN_WIDTH / 1920
                 if vine.has_problem:
                     self.reached_final_vine = True
                 break
@@ -261,87 +322,59 @@ class VineState(State):
             self.knight_gravity = 0
             self.on_vine = True
             if self.current_round == 2:
-                print("FINISHED")
+                self.finishedTimer += dt
                 self.gravity_enabled = False
                 self.can_jump = False
                 self.knight_speed = 0
 
-        # If the knight falls off the bottom of the screen:
+        # If the knight falls off the bottom of the screen
         if self.knight_rect.top > self.game.SCREEN_HEIGHT:
             if self.reached_final_vine and self.current_round == 1:
-                # Move on to Round 2
-                print("NEXTROUND")
                 self.current_round = 2
                 self.initialize_round()
             else:
-                # Fell—restart from Round 1
-                print("FELL - BACK TO ROUND 1")
                 self.current_round = 1
                 self.initialize_round()
 
+        if self.finishedTimer > 3:
+            self.finished = True 
+
     def render(self, display):
         display.blit(self.background_surface, (0, 0))
-        display.blit(self.water_surface, (0, 1100))
+        display.blit(self.water_surface, (0, self.game.SCREEN_HEIGHT - self.water_surface.get_height()/2))
 
         if self.current_round == 1:
-            # display.blit(self.ground_surface, (0, 875))
-            display.blit(self.ground_surface, (0, 466.2109375))
-            
+            display.blit(self.ground_surface, (0, self.ground_position))
 
-        scaled_vine = pg.transform.scale(self.background_vine, (1900, 1000))
-        display.blit(scaled_vine, (350, -120))
+        # Position the background vine appropriately
+        vine_bg_x = 350 * self.game.SCREEN_WIDTH / 1920
+        vine_bg_y = -120 * self.game.SCREEN_HEIGHT / 1280
+        display.blit(self.background_vine, (vine_bg_x, vine_bg_y))
 
         for vine in self.vines:
             vine.draw(display, self.vine_surface)
 
         if self.current_round == 2:
-            display.blit(self.ground_surface, (1700, 875))
+            ground_x = 1700 * self.game.SCREEN_WIDTH / 1920
+            ground_y = 875 * self.game.SCREEN_HEIGHT / 1280
+            display.blit(self.ground_surface, (ground_x, ground_y))
 
         knight_surf = self.knight_surface_right if self.facing_right else self.knight_surface_left
-        # print(self.knight_rect)
         display.blit(knight_surf, self.knight_rect)
 
-        font = pg.font.Font(None, 50)
+        font_size = int(50 * min(self.game.SCREEN_WIDTH / 1920, self.game.SCREEN_HEIGHT / 1280))
+        font = pg.font.Font(None, font_size)
         round_text = font.render(f"Round: {self.current_round}/{self.max_rounds}", True, (255, 255, 255))
-        display.blit(round_text, (20, 20))
+        display.blit(round_text, (20 * self.game.SCREEN_WIDTH / 1920, 20 * self.game.SCREEN_HEIGHT / 1280))
 
-class Game:
-    def __init__(self):
-        pg.init()
-        self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pg.display.set_caption('Vine Physics Challenge')
-        self.clock = pg.time.Clock()
-        self.state = VineState(self)
-        self.last_time = pg.time.get_ticks()
+        if self.paused:
+            image_width, image_height = self.paused_modal.get_size()
+            x_centered = self.game.SCREEN_WIDTH // 2 - image_width // 2
+            y_centered = self.game.SCREEN_HEIGHT // 2 - image_height // 2
+            display.blit(self.paused_modal, (x_centered,y_centered))
 
-    def run(self):
-        while True:
-            current_time = pg.time.get_ticks()
-            dt = (current_time - self.last_time) / 1000.0
-            self.last_time = current_time
-
-            actions = {
-                "quit": False,
-                "left": False,
-                "right": False,
-                "jump": False
-            }
-
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    actions["quit"] = True
-
-            keys = pg.key.get_pressed()
-            actions["left"] = keys[pg.K_LEFT]
-            actions["right"] = keys[pg.K_RIGHT]
-            actions["jump"] = keys[pg.K_SPACE] or keys[pg.K_UP]
-
-            self.state.update(actions, dt)
-            self.screen.fill((0, 0, 0))
-            self.state.render(self.screen)
-            pg.display.flip()
-            self.clock.tick(FPS)
-
-if __name__ == "__main__":
-    game = Game()
-    game.run()
+        if self.finished:
+            image_width, image_height = self.finished_modal.get_size()
+            x_centered = self.game.SCREEN_WIDTH // 2 - image_width // 2
+            y_centered = self.game.SCREEN_HEIGHT // 2 - image_height // 2
+            display.blit(self.finished_modal, (x_centered,y_centered))

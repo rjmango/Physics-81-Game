@@ -114,6 +114,7 @@ class MazeState(State):
         
         if self.finished:
             if keys[pygame.K_RETURN]:
+                self.game.blip.play()
                 self.exit_state()
 
         self.dt = self.clock.tick(FPS) / 1000

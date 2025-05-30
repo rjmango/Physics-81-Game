@@ -1,5 +1,5 @@
 import pygame
-from spriteshit import SpriteSheet
+from utils.spritesheet import SpriteSheet
 
 class VineRoomDialogueState:
     def __init__(self, window, screen_size):

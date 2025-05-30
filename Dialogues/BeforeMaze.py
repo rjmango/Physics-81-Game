@@ -1,5 +1,5 @@
 import pygame
-from spriteshit import SpriteSheet
+from utils.spritesheet import SpriteSheet
 
 class MazeDialogueState:
     def __init__(self, window, screen_size):
