@@ -4,8 +4,10 @@ import random
 import math
 from os import path
 
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1280
+# SCREEN_WIDTH = 1920
+# SCREEN_HEIGHT = 1280
+SCREEN_WIDTH = 1024
+SCREEN_HEIGHT = 682
 FPS = 60
 
 class Vine:

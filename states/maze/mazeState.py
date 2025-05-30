@@ -10,7 +10,7 @@ from .tilemap import *
 WIDTH = 960
 HEIGHT = 640
 
-class Game(State):
+class MazeState(State):
     def __init__(self, game):
         State.__init__(self, game)
         self.clock = pg.time.Clock()
@@ -36,7 +36,7 @@ class Game(State):
         self.map = Map(map_path)
 
         # Properly join the path to the image
-        self.player_img = pg.image.load(os.path.join(img_folder, 'kneght.png')).convert_alpha()
+        self.player_img = pg.image.load(os.path.join(img_folder, 'knight.png')).convert_alpha()
         
     def new(self):
         self.all_sprites = pg.sprite.Group()
@@ -97,7 +97,7 @@ class Game(State):
         goal_hit = pg.sprite.spritecollideany(self.player, [s for s in self.all_sprites if isinstance(s, Goal)])
         if goal_hit:
             self.playing = False  # End the current game loop
-            self.show_congrats_screen() 
+            
 
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
@@ -134,7 +134,7 @@ class Game(State):
 
 if __name__ == "__main__":
     # create the game object
-    g = Game()
+    g = MazeState()
     g.show_start_screen()
     while True:
         g.new()
