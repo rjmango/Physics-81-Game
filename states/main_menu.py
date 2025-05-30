@@ -4,7 +4,7 @@ from states.projectile import Projectile
 from utils.button import Button
 
 from states.bossDialogue import BossDialogue
-from .endingDialogue import EndingDialogue
+from .maze.mazeState import MazeState
 
 class MainMenu(State):
     def __init__(self, game):
@@ -24,10 +24,10 @@ class MainMenu(State):
 
         if self.play_button.draw(display):
             self.game.main_menu_bgm.stop()
+            # nextState = BossDialogue(self.game)
             # nextState = EndingDialogue(self.game)
-            nextState = BossDialogue(self.game)
             # nextState = Projectile(self.game)
-            # projectileState = Game(self.game)
+            nextState = MazeState(self.game)
             nextState.enter_state()
         if self.quit_button.draw(display):
             print("quit")
