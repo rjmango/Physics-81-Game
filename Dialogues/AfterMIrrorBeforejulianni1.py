@@ -1,96 +1,86 @@
 import pygame
 from spriteshit import SpriteSheet
 
-pygame.init()
-w, h = 1920, 1280
-canvas = pygame.Surface((w, h))
-window = pygame.display.set_mode((w, h))
-pygame.display.set_caption("Dialogue Box Example")
+class MirrorToVineTransitionDialogueState:
+    def __init__(self, window, screen_size):
+        self.window = window
+        self.canvas = pygame.Surface(screen_size)
+        self.w, self.h = screen_size
 
-# Load and scale background
-background = pygame.image.load("pngs/mirrorbg.jpg").convert()
-background = pygame.transform.scale(background, (w, h))
+        # Background
+        self.background = pygame.image.load("pngs/mirrorbg.jpg").convert()
+        self.background = pygame.transform.scale(self.background, screen_size)
 
-# Load sprites
-knight_inactive = SpriteSheet('spritesheets/knight-idle-inactive.png')
-knight_active = SpriteSheet('spritesheets/knight-idle.png')
-wizard_inactive = SpriteSheet('spritesheets/wizard-idle-inactive.png')
-wizard_active = SpriteSheet('spritesheets/Idle.png')
+        # Sprites
+        knight_active = SpriteSheet('spritesheets/knight-idle.png')
+        wizard_active = SpriteSheet('spritesheets/Idle.png')
 
-# Extract sprites
-knight = knight_active.get_sprite(0, 128, 128, 9, 'Red')
-wizard_img = wizard_active.get_sprite(0, 128, 128, 11, 'Red')
-wizard = pygame.transform.flip(wizard_img, True, False)
+        knight_img = knight_active.get_sprite(0, 128, 128, 9, 'Red')
+        wizard_img = wizard_active.get_sprite(0, 128, 128, 11, 'Red')
 
-# Positions
-knight_pos = (-100, 165)
-wizard_pos = (890, -90)
+        self.knight = knight_img
+        self.wizard = pygame.transform.flip(wizard_img, True, False)
 
-# Dialogue box properties
-dialogue_width = 1800
-dialogue_height = 400
-dialogue_x = (w - dialogue_width) // 2
-dialogue_y = h - dialogue_height - 50
+        # Positions
+        self.knight_pos = (-100, 165)
+        self.wizard_pos = (890, -90)
 
-# Create the dialogue box surface once (with alpha)
-dialogue_box = pygame.Surface((dialogue_width, dialogue_height), pygame.SRCALPHA)
-dialogue_box.fill((255, 255, 255, 180))  # White, semi-transparent
+        # Dialogue box
+        self.dialogue_width = 1800
+        self.dialogue_height = 400
+        self.dialogue_x = (self.w - self.dialogue_width) // 2
+        self.dialogue_y = self.h - self.dialogue_height - 50
 
-# Load font (default pygame font, size 36)
-font = pygame.font.SysFont(None, 36)
+        self.dialogue_box = pygame.Surface((self.dialogue_width, self.dialogue_height), pygame.SRCALPHA)
+        self.dialogue_box.fill((255, 255, 255, 180))
 
-# Dialogue text lines
-dialogue_lines = [
-    "*The knight runs after wizard, following its path*",
-    "*The wizard stops*",
-    "You really are a persistent one, aren't ya? -wizard",
-    "Just stop this! You can still change! -knight",
-    "A bit late for that -wizard",
-    "*The wizard places his hand on the wall and activate a hidden button*",
-    "*The knight is dropped in a secret part of the castle, full of vegetation*",
-    "It seems that he has to use these plants in his favor in order to escape",
-]
+        self.font = pygame.font.SysFont(None, 36)
 
-# Load sound effect for space press
-click_sound = pygame.mixer.Sound("assets/sfx/dialogue-blip.mp3")
+        # Dialogue lines
+        self.dialogue_lines = [
+            "*The knight runs after wizard, following its path*",
+            "*The wizard stops*",
+            "You really are a persistent one, aren't ya? -wizard",
+            "Just stop this! You can still change! -knight",
+            "A bit late for that -wizard",
+            "*The wizard places his hand on the wall and activates a hidden button*",
+            "*The knight is dropped in a secret part of the castle, full of vegetation*",
+            "It seems that he has to use these plants in his favor in order to escape",
+        ]
+        self.current_line = 0
+        self.dialogue_finished = False
+        self.done = False  # For switching state
 
-# Current dialogue index and finished flag
-current_line = 0
-dialogue_finished = False
+        self.click_sound = pygame.mixer.Sound("assets/sfx/dialogue-blip.mp3")
 
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and not dialogue_finished:
-                click_sound.play()
-                current_line += 1
-                if current_line >= len(dialogue_lines):
-                    dialogue_finished = True  # No more lines
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN and not self.dialogue_finished:
+            if event.key == pygame.K_SPACE:
+                self.click_sound.play()
+                self.current_line += 1
+                if self.current_line >= len(self.dialogue_lines):
+                    self.dialogue_finished = True
+                    self.done = True
 
-    # Clear canvas
-    canvas.fill((0, 0, 0) if dialogue_finished else (255, 255, 255))
+    def update(self):
+        pass
 
-    if not dialogue_finished:
-        # Draw background
-        canvas.blit(background, (0, 0))
+    def draw(self):
+        self.canvas.fill((0, 0, 0) if self.dialogue_finished else (255, 255, 255))
 
-        # Draw sprites
-        canvas.blit(wizard, wizard_pos)
-        canvas.blit(knight, knight_pos)
+        if not self.dialogue_finished:
+            self.canvas.blit(self.background, (0, 0))
+            self.canvas.blit(self.wizard, self.wizard_pos)
+            self.canvas.blit(self.knight, self.knight_pos)
+            self.canvas.blit(self.dialogue_box, (self.dialogue_x, self.dialogue_y))
 
-        # Draw dialogue box
-        canvas.blit(dialogue_box, (dialogue_x, dialogue_y))
+            text = self.dialogue_lines[self.current_line]
+            text_surface = self.font.render(text, True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=(
+                self.dialogue_x + self.dialogue_width // 2,
+                self.dialogue_y + self.dialogue_height // 4
+            ))
+            self.canvas.blit(text_surface, text_rect)
 
-        # Render and center text inside dialogue box
-        text = dialogue_lines[current_line]
-        text_surface = font.render(text, True, (0, 0, 0))  # Black text
-        text_rect = text_surface.get_rect()
-        text_rect.center = (dialogue_x + dialogue_width // 2, dialogue_y + dialogue_height // 4)
-        canvas.blit(text_surface, text_rect)
-
-    # Update window
-    window.blit(canvas, (0, 0))
-    pygame.display.update()
+        self.window.blit(self.canvas, (0, 0))
+        pygame.display.update()
