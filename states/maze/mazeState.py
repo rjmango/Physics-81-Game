@@ -15,6 +15,7 @@ class MazeState(State):
         State.__init__(self, game)
         self.clock = pg.time.Clock()
         pg.key.set_repeat(500,100)
+        self.load_assets()
         self.load_data()
 
        # Get path to terrain_tiles_v2.png relative to this file
@@ -24,10 +25,17 @@ class MazeState(State):
         )
 
         self.tiles = Tilesheet(tilesheet_path, 32, 32, 16, 10)
+        self.paused = True
+        self.finished = False
 
         self.new()
-    def load_data(self):    
 
+    def load_assets(self):
+        self.paused_modal = self.game.load_background_asset("assets/popups/maze-start.png")
+
+        self.finished_modal = self.game.load_background_asset("assets/popups/maze-end.png")
+
+    def load_data(self):    
         game_folder = os.path.dirname(__file__)
         img_folder = os.path.join(game_folder, '..', '..', 'assets', 'stage 2')  # Adjust to correct folder
         map_path = os.path.join(game_folder, 'map2.txt')
@@ -91,14 +99,31 @@ class MazeState(State):
         sys.exit()
     
     def update(self, actions):
+        keys = pygame.key.get_pressed()
+
+        if not self.paused:
+            if keys[pygame.K_TAB]:
+                self.game.blip.play()
+                self.paused = True
+        
+        if self.paused:
+            if keys[pygame.K_RETURN]:
+                self.game.blip.play()
+                self.paused = False
+            return
+        
+        if self.finished:
+            if keys[pygame.K_RETURN]:
+                self.exit_state()
+
         self.dt = self.clock.tick(FPS) / 1000
         self.all_sprites.update()  # Update all sprites (including player)
         self.camera.update(self.player)
         goal_hit = pg.sprite.spritecollideany(self.player, [s for s in self.all_sprites if isinstance(s, Goal)])
         if goal_hit:
+            self.finished = True
             self.playing = False  # End the current game loop
             
-
     def draw_grid(self):
         for x in range(0, WIDTH, TILESIZE):
             pg.draw.line(self.screen, BROWN, (x, 0), (x, HEIGHT))
@@ -108,6 +133,17 @@ class MazeState(State):
         
     def render(self, display):
         self.draw(display)
+        if self.paused:
+            image_width, image_height = self.paused_modal.get_size()
+            x_centered = self.game.SCREEN_WIDTH // 2 - image_width // 2
+            y_centered = self.game.SCREEN_HEIGHT // 2 - image_height // 2
+            display.blit(self.paused_modal, (x_centered,y_centered))
+
+        if self.finished:
+            image_width, image_height = self.finished_modal.get_size()
+            x_centered = self.game.SCREEN_WIDTH // 2 - image_width // 2
+            y_centered = self.game.SCREEN_HEIGHT // 2 - image_height // 2
+            display.blit(self.finished_modal, (x_centered,y_centered))
 
     def draw(self, display):
         display.fill(BGCOLOR)

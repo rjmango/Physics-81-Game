@@ -2,6 +2,7 @@ import pygame as pg
 import sys
 import random
 import math
+from .state import State
 from os import path
 
 # SCREEN_WIDTH = 1920
@@ -81,16 +82,17 @@ class Vine:
                 text_surface = font.render(text, True, (255, 255, 255))
                 surface.blit(text_surface, (20, 120 + i * 30))
 
-
-class GameState:
+class VineState(State):
     def __init__(self, game):
-        self.game = game
+        State.__init__(self, game)
+        self.ground_position = self.game.SCREEN_HEIGHT // 1.462857143
         self.prev_state = None
         self.load_assets()
         self.init_sound()
         self.current_round = 1
         self.max_rounds = 2
         self.initialize_round()
+        self.last_time = pg.time.get_ticks()
 
     def initialize_round(self):
         self.knight_gravity = 0
@@ -102,7 +104,7 @@ class GameState:
         self.can_jump = True
 
         if self.current_round == 1:
-            self.ground_rect = pg.Rect(-430, 1090,
+            self.ground_rect = pg.Rect(-430, self.ground_position,
                                        self.ground_surface.get_width(),
                                        self.ground_surface.get_height())
             self.initial_vines = [
@@ -191,17 +193,17 @@ class GameState:
             pg.quit()
             sys.exit(1)
 
-    def update(self, actions, dt):
-        if actions.get("quit"):
-            pg.quit()
-            sys.exit()
+    def update(self, actions):
+        current_time = pg.time.get_ticks()
+        dt = (current_time - self.last_time) / 1000.0
+        self.last_time = current_time
 
         moved = False
-        if actions.get("left"):
+        if actions.get("LEFT"):
             self.knight_rect.x -= self.knight_speed
             self.facing_right = False
             moved = True
-        if actions.get("right"):
+        if actions.get("RIGHT"):
             self.knight_rect.x += self.knight_speed
             self.facing_right = True
             moved = True
@@ -214,7 +216,7 @@ class GameState:
         else:
             self.can_jump = False
 
-        if actions.get("jump") and self.can_jump:
+        if actions.get("SPACE") and self.can_jump:
             self.knight_gravity = -25
             self.on_vine = False
             self.gravity_enabled = True
@@ -265,7 +267,7 @@ class GameState:
                 self.knight_speed = 0
 
         # If the knight falls off the bottom of the screen:
-        if self.knight_rect.top > SCREEN_HEIGHT:
+        if self.knight_rect.top > self.game.SCREEN_HEIGHT:
             if self.reached_final_vine and self.current_round == 1:
                 # Move on to Round 2
                 print("NEXTROUND")
@@ -282,7 +284,9 @@ class GameState:
         display.blit(self.water_surface, (0, 1100))
 
         if self.current_round == 1:
-            display.blit(self.ground_surface, (0, 875))
+            # display.blit(self.ground_surface, (0, 875))
+            display.blit(self.ground_surface, (0, 466.2109375))
+            
 
         scaled_vine = pg.transform.scale(self.background_vine, (1900, 1000))
         display.blit(scaled_vine, (350, -120))
@@ -294,12 +298,12 @@ class GameState:
             display.blit(self.ground_surface, (1700, 875))
 
         knight_surf = self.knight_surface_right if self.facing_right else self.knight_surface_left
+        # print(self.knight_rect)
         display.blit(knight_surf, self.knight_rect)
 
         font = pg.font.Font(None, 50)
         round_text = font.render(f"Round: {self.current_round}/{self.max_rounds}", True, (255, 255, 255))
         display.blit(round_text, (20, 20))
-
 
 class Game:
     def __init__(self):
@@ -307,7 +311,7 @@ class Game:
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption('Vine Physics Challenge')
         self.clock = pg.time.Clock()
-        self.state = GameState(self)
+        self.state = VineState(self)
         self.last_time = pg.time.get_ticks()
 
     def run(self):
@@ -337,7 +341,6 @@ class Game:
             self.state.render(self.screen)
             pg.display.flip()
             self.clock.tick(FPS)
-
 
 if __name__ == "__main__":
     game = Game()

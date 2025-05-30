@@ -3,8 +3,9 @@ from states.state import State
 from states.projectile import Projectile
 from utils.button import Button
 
-from states.bossDialogue import BossDialogue
+from .bossDialogue import BossDialogue
 from .maze.mazeState import MazeState
+from .vinestate import VineState
 
 class MainMenu(State):
     def __init__(self, game):
@@ -27,7 +28,8 @@ class MainMenu(State):
             # nextState = BossDialogue(self.game)
             # nextState = EndingDialogue(self.game)
             # nextState = Projectile(self.game)
-            nextState = MazeState(self.game)
+            # nextState = MazeState(self.game)
+            nextState = VineState(self.game)
             nextState.enter_state()
         if self.quit_button.draw(display):
             print("quit")

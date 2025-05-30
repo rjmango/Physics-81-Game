@@ -107,7 +107,10 @@ class Game:
         self.pre_boss_bgm = pygame.mixer.Sound('assets/sfx/pre-boss-fight.mp3')
         self.post_boss_bgm = pygame.mixer.Sound('assets/sfx/post-boss-fight.wav')
         self.ending_dialogue_bgm = pygame.mixer.Sound('assets/sfx/ending-dialogue-bgm.mp3')
-    
+        
+        
+        #sfx
+        self.blip = pygame.mixer.Sound('assets/sfx/dialogue-blip.mp3')
 if __name__ == "__main__":
     game = Game()
     game.game_loop()
