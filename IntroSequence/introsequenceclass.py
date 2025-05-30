@@ -8,11 +8,11 @@ class IntroSequence:
         pygame.display.set_caption('Intro')
         self.clock = pygame.time.Clock()
 
-        self.crawl_font = pygame.font.Font('fonts/INTROCRAWL.otf', 100)
-        self.crawltext_font = pygame.font.Font('fonts/INTROCRAWL.otf', 35)
-        self.logo_font = pygame.font.Font('fonts/LOGO.ttf', 100)
-        self.credit_font = pygame.font.Font('fonts/LOGO.ttf', 30)
-        self.space_font = pygame.font.Font('fonts/space.otf', 20)
+        self.crawl_font = pygame.font.Font('font/INTROCRAWL.otf', 100)
+        self.crawltext_font = pygame.font.Font('font/INTROCRAWL.otf', 35)
+        self.logo_font = pygame.font.Font('font/LOGO.ttf', 100)
+        self.credit_font = pygame.font.Font('font/LOGO.ttf', 30)
+        self.space_font = pygame.font.Font('font/space.otf', 20)
 
         self.load_assets()
         self.init_states()
