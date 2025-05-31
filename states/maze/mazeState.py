@@ -3,6 +3,7 @@ from ..state import State
 import sys
 import os
 from .tilesheet import Tilesheet
+from ..vineDialogue import VineDialogue
 from .settings import *
 from .sprites import *
 from .tilemap import *
@@ -17,6 +18,7 @@ class MazeState(State):
         pg.key.set_repeat(500,100)
         self.load_assets()
         self.load_data()
+        self.game.maze_bgm.play(-1)
 
        # Get path to terrain_tiles_v2.png relative to this file
         current_dir = os.path.dirname(__file__)  # .../game/states/maze
@@ -115,7 +117,10 @@ class MazeState(State):
         if self.finished:
             if keys[pygame.K_RETURN]:
                 self.game.blip.play()
+                newState = VineDialogue(self.game)
                 self.exit_state()
+                newState.enter_state()
+                self.game.maze_bgm.stop()
 
         self.dt = self.clock.tick(FPS) / 1000
         self.all_sprites.update()  # Update all sprites (including player)

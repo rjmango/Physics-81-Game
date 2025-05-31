@@ -22,7 +22,7 @@ class Game:
         self.bossDefeated = False
         self.bossDefeatedChanged = False
 
-        self.actions = {"SPACE": False, "LEFT": False, "RIGHT": False, "UP": False, "DOWN": False, "R": False}
+        self.actions = {"SPACE": False, "LEFT": False, "RIGHT": False, "UP": False, "DOWN": False, "R": False, "MB1": False}
 
         # initialize dependencies
         self.load_assets()
@@ -72,6 +72,8 @@ class Game:
                 if event.key == pygame.K_r:
                     self.actions["R"] = False
 
+            if len(self.state_stack) >= 1 and hasattr(self.state_stack[-1], 'handle_mirror_events'):
+                self.state_stack[-1].handle_mirror_events(event)
     def update(self):
         self.state_stack[-1].update(self.actions)
     
@@ -104,10 +106,15 @@ class Game:
     def load_sfx(self):
         self.main_menu_bgm = pygame.mixer.Sound('assets/sfx/main-menu-bgm.mp3')
         self.projectile_boss_bgm = pygame.mixer.Sound('assets/sfx/projectile-bgm.mp3')
+        self.maze_bgm = pygame.mixer.Sound('assets/sfx/maze.mp3')
+        self.laser_bgm = pygame.mixer.Sound('assets/sfx/laser.mp3')
         self.pre_boss_bgm = pygame.mixer.Sound('assets/sfx/pre-boss-fight.mp3')
         self.post_boss_bgm = pygame.mixer.Sound('assets/sfx/post-boss-fight.wav')
         self.ending_dialogue_bgm = pygame.mixer.Sound('assets/sfx/ending-dialogue-bgm.mp3')
         
+        self.intro_dialogue_bgm = pygame.mixer.Sound('assets/sfx/1st dialogue.mp3')
+        self.vine_dialogue_bgm = pygame.mixer.Sound('assets/sfx/2nd dialogue.mp3')
+        self.mirror_dialogue_bgm = pygame.mixer.Sound('assets/sfx/3rd dialogue.mp3')
         
         #sfx
         self.blip = pygame.mixer.Sound('assets/sfx/dialogue-blip.mp3')

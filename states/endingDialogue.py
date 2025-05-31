@@ -25,6 +25,7 @@ class EndingDialogue(State):
         self.knight_turn = True
         self.both_turn = False
         self.space_pressed = False
+        self.isFinished = False
 
         # Dialogue information
         file = open('assets/dialogues/resolution.txt', 'r')
@@ -43,6 +44,14 @@ class EndingDialogue(State):
             self.game.bossDefeatedChanged = False
 
         keys = pygame.key.get_pressed()
+        if self.isFinished:
+            if keys[pygame.K_RETURN]:
+                blip = blipSound
+                blip.play()
+                self.game.ending_dialogue_bgm.stop()
+                self.exit_state()
+            return
+
         if keys[pygame.K_SPACE]:
             if not self.space_pressed:  # Only trigger when space was not pressed before
                 blip = blipSound
@@ -51,8 +60,7 @@ class EndingDialogue(State):
                 self.space_pressed = True
 
                 if self.current_dialogue_number == len(self.dialogue):
-                    self.exit_state()
-                    self.game.ending_dialogue_bgm.stop()
+                    self.isFinished = True
                     return
                 
                 self.current_dialogue = self.dialogue[self.current_dialogue_number]
@@ -104,6 +112,10 @@ class EndingDialogue(State):
         
         wrapped_text = self.wrap_text(text, self.dialogue_font, self.game.SCREEN_WIDTH - 50)
         
+        if self.isFinished:
+            display.blit(self.popup, (0,0))
+            return
+
         y_pos = 20
         for line in wrapped_text:
             text_surface = self.dialogue_font.render(line, True, (0, 0, 0))
@@ -167,6 +179,7 @@ class EndingDialogue(State):
     def load_assets(self):
         # Load background by changing parameter
         self.bg = self.game.load_background_asset("assets/bg/cellar.jpg")
+        self.popup = self.game.load_background_asset("assets/popups/Goal.png")
         # Example
         # self.bg = self.game.load_background_asset("assets/bg/new-bg.png")
 

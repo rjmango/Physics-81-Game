@@ -3,6 +3,7 @@ import sys
 import random
 import math
 from .state import State
+from .mirrorDialogue import MirrorDialogue
 from os import path
 
 class Vine:
@@ -253,7 +254,10 @@ class VineState(State):
         if self.finished:
             if keys[pg.K_RETURN]:
                 self.game.blip.play()
+                pg.mixer.music.stop()
+                newState = MirrorDialogue(self.game)
                 self.exit_state()
+                newState.enter_state()
         
         current_time = pg.time.get_ticks()
         dt = (current_time - self.last_time) / 1000.0

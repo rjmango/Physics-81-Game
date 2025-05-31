@@ -1,15 +1,15 @@
 import pygame
 from utils.spritesheet import SpriteSheet
+from states.state import State
 
-class MazeDialogueState:
-    def __init__(self, window, screen_size):
-        self.window = window
-        self.canvas = pygame.Surface(screen_size)
-        self.w, self.h = screen_size
+class MazeDialogueState(State):
+    def __init__(self, game):
+        State.__init__(self, game)
+        self.w, self.h = self.game.SCREEN_WIDTH, self.game.SCREEN_HEIGHT
 
         # Background
         self.background = pygame.image.load("pngs/mazebg.png").convert()
-        self.background = pygame.transform.scale(self.background, screen_size)
+        self.background = pygame.transform.scale(self.background, (self.w, self.h))
 
         # Sprites
         knight_inactive = SpriteSheet('spritesheets/knight-idle-inactive.png')
